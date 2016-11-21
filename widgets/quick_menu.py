@@ -3,6 +3,7 @@ import widgets.FindTextDialog
 import widgets.CreateClassDialog
 import widgets.CreateVarDialog
 import widgets.GoToDialog
+import widgets.FindVirtualCallDialog
 from widgets.quick_menu_pyside import  Ui_QuickMenu
 import idaapi
 from widgets import visual_style
@@ -18,6 +19,7 @@ class QuickMenu(Ui_QuickMenu):
     CREATE_VTABLE_CLICKED = 3
     RELOAD_HEADERS_CLICKED = 4
     GOTO_CLICKED = 5
+    FIND_VCALL_CLICKED = 6
 
     def __init__(self):
 
@@ -33,6 +35,7 @@ class QuickMenu(Ui_QuickMenu):
         self.reload_headers_btn.clicked.connect(self.reload_headers_btn_clicked)
         self.create_vtable_btn.clicked.connect(self.create_vtable_btn_clicked)
         self.goto_btn.clicked.connect(self.goto_btn_clicked)
+        self.find_vcall_btn.clicked.connect(self.findvcall_btn_clicked)
         visual_style.set(self.d)
 
 
@@ -68,6 +71,11 @@ class QuickMenu(Ui_QuickMenu):
         self.d.accept()
         self.button_clicked = QuickMenu.GOTO_CLICKED
 
+    def findvcall_btn_clicked(self):
+        self.d.accept()
+        self.button_clicked = QuickMenu.FIND_VCALL_CLICKED
+
+
     def text(self):
         return self.selected_text
 
@@ -90,3 +98,5 @@ def launch():
         decompiled.reload_headers()
     elif btn_clicked == QuickMenu.GOTO_CLICKED:
         widgets.GoToDialog.launch(menu.text())
+    elif btn_clicked == QuickMenu.FIND_VCALL_CLICKED:
+        widgets.FindVirtualCallDialog.launch()

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\PyIDA\widgets\quick_menu.ui'
 #
-# Created: Thu Nov 17 14:27:22 2016
+# Created: Mon Nov 21 14:40:18 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -38,6 +38,9 @@ class Ui_QuickMenu(object):
         self.find_text_tnb.setFlat(False)
         self.find_text_tnb.setObjectName("find_text_tnb")
         self.verticalLayout.addWidget(self.find_text_tnb)
+        self.find_vcall_btn = QtGui.QPushButton(QuickMenu)
+        self.find_vcall_btn.setObjectName("find_vcall_btn")
+        self.verticalLayout.addWidget(self.find_vcall_btn)
         self.create_var_btn = QtGui.QPushButton(QuickMenu)
         self.create_var_btn.setFlat(False)
         self.create_var_btn.setObjectName("create_var_btn")
@@ -68,6 +71,7 @@ class Ui_QuickMenu(object):
         QuickMenu.setWindowTitle(QtGui.QApplication.translate("QuickMenu", "Quick menu", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("QuickMenu", "Selected:", None, QtGui.QApplication.UnicodeUTF8))
         self.find_text_tnb.setText(QtGui.QApplication.translate("QuickMenu", "Find Text", None, QtGui.QApplication.UnicodeUTF8))
+        self.find_vcall_btn.setText(QtGui.QApplication.translate("QuickMenu", "Find Virtual Call", None, QtGui.QApplication.UnicodeUTF8))
         self.create_var_btn.setText(QtGui.QApplication.translate("QuickMenu", "Create Var", None, QtGui.QApplication.UnicodeUTF8))
         self.create_class_btn.setText(QtGui.QApplication.translate("QuickMenu", "Create Class", None, QtGui.QApplication.UnicodeUTF8))
         self.create_vtable_btn.setText(QtGui.QApplication.translate("QuickMenu", "Create vtable struct", None, QtGui.QApplication.UnicodeUTF8))

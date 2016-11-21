@@ -9,7 +9,10 @@ dump_file = os.path.join(os.getcwd(),'decompiled.c')
 search_results_file = os.path.join(os.getcwd(),'search_results.txt')
 headers_folder = os.path.join(os.getcwd(),'headers')
 
-pointer_size = 8
+
+pointer_size = 8 if idaapi.get_inf_structure().is_64bit() else 4
+processor_typ = idaapi.get_inf_structure().procName
+
 
 
 def create_class(nm, sz):
@@ -68,14 +71,14 @@ def dump_functions(filter = None, fname = None):
 
 
 
-def find_text(filter, only_named = True, regex = False, standalone = False):
+def find_text(filter, only_named = True, regex = False, standalone = False, funcs = idautils.Functions() ):
 
     table = []
     filter = str(filter)
     f = open(search_results_file,'w')
     if not idaapi.init_hexrays_plugin():
         return False
-    for head in idautils.Functions():
+    for head in funcs:
         func = idaapi.get_func(head)
         if func is None:
             continue
@@ -131,14 +134,24 @@ def reload_headers():
                 print("Successful")
 
 
+
+def get_func_declaration(ea):
+    name = idc.Name(ea)
+    if idc.Demangle(name, 0):
+        name = idc.Demangle(name, 0)
+    return name
+
+
+
 def create_vtable(ea):
 
     print "Trying to create vtable at addr %s" % hex(ea)
 
-    name = idc.Name(ea)
-    if idc.Demangle(name, 0):
-        name = idc.Demangle(name, 0)
-    vtable_entries = []
+    vtable_name = idc.Name(ea)
+    if not vtable_name:
+        vtable_name = "Unknown_vtable"
+
+    eas = []
 
     for i,xhead in enumerate(idautils.Heads(ea, ea + (pointer_size * 200))):
         dref = list(idautils.DataRefsFrom(xhead))
@@ -148,27 +161,50 @@ def create_vtable(ea):
                 break
             if i>0 and len(list(idautils.DataRefsTo(xhead)))>0:
                 break
-            vtable_entries.append(dref[0])
+            eas.append(dref[0])
         else:
             break
 
-    if len(vtable_entries) == 0:
+    if len(eas) == 0:
         print "Failed to create virtual table"
         return None
 
-    vtables = []
+    funcs = []
     func_names = []
-    for ea in vtable_entries:
-        func = idc.Demangle(idc.Name(ea), 0)
-        m = re.match("\w*::(.*)",func)
+    for ea in eas:
+        decl = get_func_declaration(ea)
+
+        #comment
+        comment = ""
+        m = re.match("(\w*)::(.*)",decl)
         if m:
-            func = m.group(1)
+            decl = m.group(2)
+            comment = "\t//" + m.group(1)+"::"+ m.group(2)
 
-        func = func.replace("~","deconstructor_")
-        # print func.split("(")
+        #calling convention
+        calling_convention = ""
 
-        func_name,args = func.split("(")
+        try:
+            func = idaapi.get_func(ea)
+            if func:
+                cfunc = idaapi.decompile(func)
+                if cfunc:
+                    n = str(cfunc).split("\n")[0]
+                    if "__fastcall" in n:
+                        calling_convention = "__fastcall "
+        except:
+            pass
 
+        #getting name and args
+        decl = decl.replace("~","deconstructor_")
+        if "(" in decl:
+            func_name,args = decl.split("(")
+            args = "(void* self, %s" %args
+        else:
+            func_name = decl
+            args = "(void* self)"
+
+        #rename functions with the same name
         f = func_name
         i=2
         while f in func_names:
@@ -176,14 +212,14 @@ def create_vtable(ea):
             i+=1
         func_name = f
 
-        ret = "void* (*%s)(void* self, %s" % (func_name,args)
+        #create final string
+        ret = "\tvoid* (%s*%s)%s; %s\n" % (calling_convention,func_name,args,comment)
         ret = ret.replace(", )",")").replace(", void)",")")
-        vtables.append(ret)
+
+        funcs.append(ret)
         func_names.append(func_name)
 
-    vtable_body = "\t" + ";\n\t".join(vtables) + ";\n"
-
-    struct_text = "struct %s\n{\n%s\n};" % (name,vtable_body)
+    struct_text = "struct %s\n{\n%s\n};" % (vtable_name + "_class","".join(funcs))
     return struct_text
 
 
@@ -200,4 +236,18 @@ def vtable(par):
         return create_vtable(par)
 
 
+def virtual_call_funcs():
+    from mybase import database,instruction,function
+    l = set()
+    for fn in database.functions():
+        for ea in function.iterate(fn):
+            if instruction.mnemonic(ea) == 'call' and \
+                        instruction.op_type(ea,0) in (idaapi.o_reg, idaapi.o_phrase,idaapi.o_displ):
+                l.add(fn)
+    return l
 
+
+def find_virtual_call(fn):
+    if not hasattr(find_virtual_call,"l"):
+        find_virtual_call.l = virtual_call_funcs()
+    return find_text(fn,standalone=True,funcs=find_virtual_call.l)
