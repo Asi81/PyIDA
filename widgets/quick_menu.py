@@ -4,10 +4,14 @@ import widgets.CreateClassDialog
 import widgets.CreateVarDialog
 import widgets.GoToDialog
 import widgets.FindVirtualCallDialog
+import widgets.CreateVTableDialog
+import widgets.TracebackDialog
 from widgets.quick_menu_pyside import  Ui_QuickMenu
 import idaapi
 from widgets import visual_style
 import decompiled
+import sys
+import traceback
 
 
 
@@ -81,22 +85,33 @@ class QuickMenu(Ui_QuickMenu):
 
 
 
-
 def launch():
-    menu = QuickMenu()
-    btn_clicked = menu.launch()
+    try:
+        menu = QuickMenu()
+        btn_clicked = menu.launch()
 
-    if btn_clicked == QuickMenu.FIND_BTN_CLICKED:
-        widgets.FindTextDialog.launch()
-    elif btn_clicked == QuickMenu.CREATE_CLASS_BTN_CLICKED:
-        widgets.CreateClassDialog.launch()
-    elif btn_clicked == QuickMenu.CREATE_VAR_BTN_CLICKED:
-        widgets.CreateVarDialog.launch()
-    elif btn_clicked == QuickMenu.CREATE_VTABLE_CLICKED:
-        print decompiled.vtable(menu.text())
-    elif btn_clicked == QuickMenu.RELOAD_HEADERS_CLICKED:
-        decompiled.reload_headers()
-    elif btn_clicked == QuickMenu.GOTO_CLICKED:
-        widgets.GoToDialog.launch(menu.text())
-    elif btn_clicked == QuickMenu.FIND_VCALL_CLICKED:
-        widgets.FindVirtualCallDialog.launch()
+        if btn_clicked == QuickMenu.FIND_BTN_CLICKED:
+            widgets.FindTextDialog.launch()
+        elif btn_clicked == QuickMenu.CREATE_CLASS_BTN_CLICKED:
+            widgets.CreateClassDialog.launch()
+        elif btn_clicked == QuickMenu.CREATE_VAR_BTN_CLICKED:
+            widgets.CreateVarDialog.launch()
+        elif btn_clicked == QuickMenu.CREATE_VTABLE_CLICKED:
+            widgets.CreateVTableDialog.launch()
+        elif btn_clicked == QuickMenu.RELOAD_HEADERS_CLICKED:
+            decompiled.reload_headers()
+        elif btn_clicked == QuickMenu.GOTO_CLICKED:
+            widgets.GoToDialog.launch(menu.text())
+        elif btn_clicked == QuickMenu.FIND_VCALL_CLICKED:
+            widgets.FindVirtualCallDialog.launch()
+    except:
+        traceback.print_exc()
+        widgets.TracebackDialog.set_last_exception(sys.exc_info())
+
+
+
+
+
+
+
+
