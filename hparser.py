@@ -1,26 +1,26 @@
 import re
+import idaapi
+import copy
 
-pointer_size = 4
 
-def raise_error(s):
-    print s
-    raise BaseException()
+
+class Key(object):
+    def __init__(self, pred): self.pred = pred
+    def __eq__(self, other): return self.pred(other)
+
+pointer_size = 8
+
+def raise_error(error_text):
+    print error_text
+    raise BaseException(error_text)
 
 
 def sizeof(typ):
-    if (typ.endswith("*")):
+    if typ.endswith("*"):
         return pointer_size
 
-    builtin = {}
-    builtin['int'] = 4
-    builtin['unsigned int'] = 4
-    builtin['short'] = 2
-    builtin['unsigned short'] = 2
-    builtin['char'] = 1
-    builtin['unsigned char'] = 1
-    builtin['__int64'] = 8
-    builtin['pvoid'] = pointer_size
-    builtin['pdword'] = pointer_size
+    builtin = {'int': 4, 'unsigned int': 4, 'short': 2, 'unsigned short': 2, 'char': 1, 'unsigned char': 1,
+               '__int64': 8, 'pvoid': pointer_size, 'pdword': pointer_size}
 
     if typ not in builtin.keys():
         raise_error("Unknown type %s" % typ)
@@ -34,23 +34,41 @@ def remove_comments(cl):
 
 
 class StructField(object):
-    def __init__(self):
+    def __init__(self,item = None):
         self.typ = ""
-        self.name = ""
         self.fun_args = ""
         self.arr_list = []
         self.strong_ast = ""
         self.weak_ast = ""
         self.orig_str = ""
         self.sign = ""
+        self.name = ""
+        if item:
+            self.parse(item)
+
+
+    def array_shape(self):
+        return copy.copy(self.arr_list)
+
+    def set_array_shape(self,shape):
+        self.arr_list = copy.copy(shape)
 
     def type_string(self):
         arrstr = "".join("[%s]" % i for i in self.arr_list)
         full_type = "%s %s %s %s %s %s" % (self.sign, self.typ, self.weak_ast, self.strong_ast, self.fun_args, arrstr)
-        while full_type.count("  "):
-            full_type = full_type.replace("  ", " ")
-
+        full_type = re.sub(' +',' ',full_type).strip()
         return full_type
+
+    def __str__(self):
+        arrstr = "".join("[%s]" % i for i in self.arr_list)
+
+        show_name = self.name
+        if self.strong_ast:
+            show_name = self.strong_ast.replace(")", " %s)" % self.name  )
+        definition = "%s %s %s %s %s %s" % (self.sign, self.typ, self.weak_ast, show_name, self.fun_args, arrstr)
+        definition = re.sub(' +',' ',definition).strip()
+        return definition
+
 
     def parse(self, item):
 
@@ -82,14 +100,14 @@ class StructField(object):
         if m:
             self.weak_ast = m.group(1).count('*') * '*'
             self.strong_ast = "(" + m.group(2).count('*') * '*' + ")"
-            self.var_name = m.group(3)
+            self.name = m.group(3)
         else:
             m = re.match(r'([\*\s]*)([A-Za-z_]\w*)', item)
             if not m:
                 raise_error("var name not found")
             self.weak_ast = m.group(1).count('*') * '*'
             self.strong_ast = ''
-            self.var_name = m.group(2)
+            self.name = m.group(2)
         item = item[m.end(0):]
 
         # get func args
@@ -121,21 +139,19 @@ class StructField(object):
     def size(self):
         if self.strong_ast:
             return pointer_size
-        s = 1
+        result = 1
         for a in self.arr_list:
-            s *= a
-        return s * self.single_size()
+            result *= a
+        return result * self.single_size()
 
     def divisible_size(self):
-        return self.size() / (self.arr_list[0] if self.arr_list else 1)
-
-    def __len__(self):
-        if self.strong_ast:
-            return 1
-
         if self.arr_list:
-            return self.arr_list[0]
-        return 1
+            return self.size() / self.arr_list[0]
+        return self.size()
+
+    def divisible_count(self):
+        return self.size() / self.divisible_size()
+
 
 
 class HeaderStruct(object):
@@ -143,6 +159,16 @@ class HeaderStruct(object):
         self.fields = []
         self.struct_name = ''
         self.align = align
+
+
+    def __str__(self):
+
+        s = """struct %s
+{
+%s;
+};
+        """ % (self.struct_name,  ";\n".join( "\t" + str(s) for s in self.fields ))
+        return s
 
     def parse(self, struct):
 
@@ -185,7 +211,7 @@ class HeaderStruct(object):
     def fields(self):
         return [f.name for f in self.fields]
 
-    def insert_var(self, field_name, new_var_str, arr_index = 0):
+    def split_var(self, field_name, new_var_str, arr_index = 0):
 
         """
 
@@ -194,30 +220,69 @@ class HeaderStruct(object):
         :param arr_index: int
 
         """
-        f = self.fields[self.fields().index(field_name)]
+        try:
+            i = self.fields.index(Key(lambda x: x.name == field_name))
+        except:
+            raise_error("field %s not found" % field_name)
 
-        nf = StructField()
-        nf.parse(new_var_str)
+        of = self.fields[i]
+        nf = StructField(new_var_str)
 
-        if nf.size() % f.divisible_size():
-            raise_error("New size = %s  should be divisible of %s" % (nf.size(),f.divisible_size()))
+        if nf.size() % of.divisible_size():
+            raise_error("New size = %s  should be divisible of %s" % (nf.size(),of.divisible_size()))
 
-        if nf.size() > f.size():
-            raise_error("New field size(%s) is bigger than old field size(%d)" % (nf.size(), f.size()))
+        if nf.size() > of.size():
+            raise_error("New field size(%s) is bigger than old field size(%d)" % (nf.size(), of.size()))
 
-        if f.arr_list:
-
-            repl_count = nf.size / f.divisible_size()
-            if arr_index:
-                pre_f = f
-                pre_f.arr_list[0] = arr_index
+        end_index = arr_index + nf.size() / of.divisible_size()
+        if end_index > of.divisible_count():
+            raise_error("Array index is out of bounds")
 
 
+        self.fields.pop(i)
 
+        if arr_index:
+            pre_f = copy.deepcopy(of)
+            shape = pre_f.array_shape()
+            shape[0] = arr_index
+            pre_f.set_array_shape(shape)
+            self.fields.insert(i,pre_f)
+            i+=1
+
+        self.fields.insert(i,nf)
+        i+=1
+
+        rest_count = of.divisible_count() - end_index
+        if rest_count:
+            post_f = copy.deepcopy(of)
+            shape = post_f.array_shape()
+            shape[0] = rest_count
+            post_f.set_array_shape(shape)
+            post_f.name = post_f.name + "_%s" % end_index
+            self.fields.insert(i,post_f)
+            i+=1
         pass
 
     def __len__(self):
         return len(self.fields)
+
+
+
+
+class HFile:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def struct_list(self):
+        pass
+
+    def insert(self, structure):
+        pass
+
+    def get(self,struct_name):
+        pass
+
+
 
 
 s = """struct CLafFlash
@@ -231,6 +296,7 @@ s = """struct CLafFlash
 	int *arr[5];                                //48
 	void (*pfunc)(int a1);                          //88
 	void* (*super_ptr) (int a1,int a2, int a3);     //96
+	int yy;
 
 }; //104
 
@@ -246,10 +312,20 @@ e = """struct CLafFlash
 };
 
 """
-hs = HeaderStruct(16)
+hs = HeaderStruct(1)
 hs.parse(s)
 
-print "struct field count %s" % len(hs)
 
+print str(hs)
 print "struct size ", hs.size()
 
+hs.split_var("buf2", "int my_new_var", 4)
+
+print str(hs)
+print "struct size ", hs.size()
+
+
+# print "struct field count %s" % len(hs)
+#
+# print "struct size ", hs.size()
+#
