@@ -33,13 +33,29 @@ class QuickMenu(Ui_QuickMenu):
 
         self.setupUi(self.d)
         self.selected_text = idaapi.get_highlighted_identifier()
-        self.find_text_tnb.clicked.connect(self.find_text_btn_clicked)
-        self.create_class_btn.clicked.connect(self.create_class_btn_clicked)
-        self.create_var_btn.clicked.connect(self.create_var_btn_clicked)
         self.reload_headers_btn.clicked.connect(self.reload_headers_btn_clicked)
-        self.create_vtable_btn.clicked.connect(self.create_vtable_btn_clicked)
         self.goto_btn.clicked.connect(self.goto_btn_clicked)
-        self.find_vcall_btn.clicked.connect(self.findvcall_btn_clicked)
+
+        self.find_in_decompiled_menu = QtGui.QMenu("",self.d)
+        self.find_text_action =  self.find_in_decompiled_menu.addAction("Text/Var")
+        self.find_virtual_call_action = self.find_in_decompiled_menu.addAction("Virtual Call")
+        self.find_text_action.triggered.connect(self.find_text_btn_clicked)
+        self.find_virtual_call_action.triggered.connect(self.findvcall_btn_clicked)
+        self.find_in_decompiled_btn.setMenu(self.find_in_decompiled_menu)
+
+        self.create_menu = QtGui.QMenu("",self.d)
+        self.create_class_action =  self.create_menu.addAction("Class")
+        self.create_var_action = self.create_menu.addAction("Variable")
+        self.create_vtable_action = self.create_menu.addAction("VTable struct")
+        self.create_class_action.triggered.connect(self.create_class_btn_clicked)
+        self.create_var_action.triggered.connect(self.create_var_btn_clicked)
+        self.create_vtable_action.triggered.connect(self.create_vtable_btn_clicked)
+
+        self.create_btn.setMenu(self.create_menu)
+
+
+
+
         visual_style.set(self.d)
 
 

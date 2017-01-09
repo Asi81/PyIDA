@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\PyIDA\widgets\quick_menu.ui'
 #
-# Created: Mon Nov 21 14:40:18 2016
+# Created: Mon Jan  9 13:58:33 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_QuickMenu(object):
     def setupUi(self, QuickMenu):
         QuickMenu.setObjectName("QuickMenu")
-        QuickMenu.resize(297, 371)
+        QuickMenu.resize(297, 423)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -32,27 +32,13 @@ class Ui_QuickMenu(object):
         self.text_edit.setObjectName("text_edit")
         self.horizontalLayout.addWidget(self.text_edit)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.find_text_tnb = QtGui.QPushButton(QuickMenu)
-        self.find_text_tnb.setAutoDefault(True)
-        self.find_text_tnb.setDefault(False)
-        self.find_text_tnb.setFlat(False)
-        self.find_text_tnb.setObjectName("find_text_tnb")
-        self.verticalLayout.addWidget(self.find_text_tnb)
-        self.find_vcall_btn = QtGui.QPushButton(QuickMenu)
-        self.find_vcall_btn.setObjectName("find_vcall_btn")
-        self.verticalLayout.addWidget(self.find_vcall_btn)
-        self.create_var_btn = QtGui.QPushButton(QuickMenu)
-        self.create_var_btn.setFlat(False)
-        self.create_var_btn.setObjectName("create_var_btn")
-        self.verticalLayout.addWidget(self.create_var_btn)
-        self.create_class_btn = QtGui.QPushButton(QuickMenu)
-        self.create_class_btn.setFlat(False)
-        self.create_class_btn.setObjectName("create_class_btn")
-        self.verticalLayout.addWidget(self.create_class_btn)
-        self.create_vtable_btn = QtGui.QPushButton(QuickMenu)
-        self.create_vtable_btn.setFlat(False)
-        self.create_vtable_btn.setObjectName("create_vtable_btn")
-        self.verticalLayout.addWidget(self.create_vtable_btn)
+        self.find_in_decompiled_btn = QtGui.QPushButton(QuickMenu)
+        self.find_in_decompiled_btn.setObjectName("find_in_decompiled_btn")
+        self.verticalLayout.addWidget(self.find_in_decompiled_btn)
+        self.create_btn = QtGui.QPushButton(QuickMenu)
+        self.create_btn.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
+        self.create_btn.setObjectName("create_btn")
+        self.verticalLayout.addWidget(self.create_btn)
         self.reload_headers_btn = QtGui.QPushButton(QuickMenu)
         self.reload_headers_btn.setFlat(False)
         self.reload_headers_btn.setObjectName("reload_headers_btn")
@@ -70,11 +56,8 @@ class Ui_QuickMenu(object):
     def retranslateUi(self, QuickMenu):
         QuickMenu.setWindowTitle(QtGui.QApplication.translate("QuickMenu", "Quick menu", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("QuickMenu", "Selected:", None, QtGui.QApplication.UnicodeUTF8))
-        self.find_text_tnb.setText(QtGui.QApplication.translate("QuickMenu", "Find Text", None, QtGui.QApplication.UnicodeUTF8))
-        self.find_vcall_btn.setText(QtGui.QApplication.translate("QuickMenu", "Find Virtual Call", None, QtGui.QApplication.UnicodeUTF8))
-        self.create_var_btn.setText(QtGui.QApplication.translate("QuickMenu", "Create Var", None, QtGui.QApplication.UnicodeUTF8))
-        self.create_class_btn.setText(QtGui.QApplication.translate("QuickMenu", "Create Class", None, QtGui.QApplication.UnicodeUTF8))
-        self.create_vtable_btn.setText(QtGui.QApplication.translate("QuickMenu", "Create vtable struct", None, QtGui.QApplication.UnicodeUTF8))
+        self.find_in_decompiled_btn.setText(QtGui.QApplication.translate("QuickMenu", "Find in decompiled", None, QtGui.QApplication.UnicodeUTF8))
+        self.create_btn.setText(QtGui.QApplication.translate("QuickMenu", "Create", None, QtGui.QApplication.UnicodeUTF8))
         self.reload_headers_btn.setText(QtGui.QApplication.translate("QuickMenu", "Reload headers", None, QtGui.QApplication.UnicodeUTF8))
         self.goto_btn.setText(QtGui.QApplication.translate("QuickMenu", "Go To Name", None, QtGui.QApplication.UnicodeUTF8))
 

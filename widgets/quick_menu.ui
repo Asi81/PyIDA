@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>297</width>
-    <height>371</height>
+    <height>423</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -40,55 +40,19 @@ color: rgb(248, 248, 248);
     </layout>
    </item>
    <item>
-    <widget class="QPushButton" name="find_text_tnb">
+    <widget class="QPushButton" name="find_in_decompiled_btn">
      <property name="text">
-      <string>Find Text</string>
-     </property>
-     <property name="autoDefault">
-      <bool>true</bool>
-     </property>
-     <property name="default">
-      <bool>false</bool>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
+      <string>Find in decompiled</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="find_vcall_btn">
+    <widget class="QPushButton" name="create_btn">
+     <property name="contextMenuPolicy">
+      <enum>Qt::DefaultContextMenu</enum>
+     </property>
      <property name="text">
-      <string>Find Virtual Call</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="create_var_btn">
-     <property name="text">
-      <string>Create Var</string>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="create_class_btn">
-     <property name="text">
-      <string>Create Class</string>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="create_vtable_btn">
-     <property name="text">
-      <string>Create vtable struct</string>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
+      <string>Create</string>
      </property>
     </widget>
    </item>
