@@ -4,11 +4,16 @@ import copy
 
 
 
-class Key(object):
+class Where(object):
     def __init__(self, pred): self.pred = pred
     def __eq__(self, other): return self.pred(other)
+    def find(self,iterator):
+        for v in iterator:
+            if self == v:
+                return v
+        return None
 
-pointer_size = 8
+pointer_size = 8 if idaapi.get_inf_structure().is_64bit() else 4
 
 def raise_error(error_text):
     print error_text
@@ -38,11 +43,13 @@ class StructField(object):
         self.typ = ""
         self.fun_args = ""
         self.arr_list = []
+        self.arr_hex_num = []
         self.strong_ast = ""
         self.weak_ast = ""
         self.orig_str = ""
         self.sign = ""
         self.name = ""
+        self.const_modif = ""
         if item:
             self.parse(item)
 
@@ -54,18 +61,23 @@ class StructField(object):
         self.arr_list = copy.copy(shape)
 
     def type_string(self):
-        arrstr = "".join("[%s]" % i for i in self.arr_list)
-        full_type = "%s %s %s %s %s %s" % (self.sign, self.typ, self.weak_ast, self.strong_ast, self.fun_args, arrstr)
+
+        def tostr(x,d):
+            return  "[%s]" % (hex(x) if d else str(x))
+        arrstr = map(tostr,self.arr_list,self.arr_hex_num)
+        full_type = "%s %s %s%s %s%s%s" % (self.const_modif, self.sign, self.typ, self.weak_ast, self.strong_ast, self.fun_args, arrstr)
         full_type = re.sub(' +',' ',full_type).strip()
         return full_type
 
     def __str__(self):
-        arrstr = "".join("[%s]" % i for i in self.arr_list)
+        def tostr(x,d):
+            return  "[%s]" % (hex(x) if d else str(x))
+        arrstr =  "".join(map(tostr,self.arr_list,self.arr_hex_num))
 
         show_name = self.name
         if self.strong_ast:
             show_name = self.strong_ast.replace(")", " %s)" % self.name  )
-        definition = "%s %s %s %s %s %s" % (self.sign, self.typ, self.weak_ast, show_name, self.fun_args, arrstr)
+        definition = "%s %s %s%s %s%s%s" % (self.const_modif, self.sign, self.typ, self.weak_ast, show_name, self.fun_args, arrstr)
         definition = re.sub(' +',' ',definition).strip()
         return definition
 
@@ -82,6 +94,14 @@ class StructField(object):
         if re.match(r'\s*(struct)|(union)', item):
             raise_error("Nested structs is not supported")
 
+
+        #get const modif
+        m = re.match('\s*(const)|(volatile)', item)
+        if m:
+            self.const_modif = m.group(0).strip()
+            item = item[m.end(0):]
+
+
         # get sign prefix
         m = re.match(r'\s*(un)*signed', item)
         if m:
@@ -89,20 +109,32 @@ class StructField(object):
             item = item[m.end(0):]
 
         # get typ
-        m = re.match(r'\s*([A-Za-z_]\w*)', item)
-        if not m:
-            raise_error("bad string %s" % item)
-        self.typ = m.group(1)
-        item = item[m.end(0):]
+        self.typ = ""
+        while True:
+            m = re.match(r'\s*([A-Za-z_]\w*)', item)
+            if not m:
+                raise_error("bad string %s" % item)
+            self.typ += m.group(1)
+            item = item[m.end(0):]
+
+            if item.startswith("::"):
+                self.typ += "::"
+                item = item[2:]
+                continue
+            break
+
+
+
+
 
         # get strong and weak pointers
-        m = re.match(r'([\s\*]*)\(([\*\s]+)([A-Za-z_]\w*)\s*\)', item)
+        m = re.match(r'([\s*]*)\(([*\s]+)([A-Za-z_]\w*)\s*\)', item)
         if m:
             self.weak_ast = m.group(1).count('*') * '*'
             self.strong_ast = "(" + m.group(2).count('*') * '*' + ")"
             self.name = m.group(3)
         else:
-            m = re.match(r'([\*\s]*)([A-Za-z_]\w*)', item)
+            m = re.match(r'([*\s]*)([A-Za-z_]\w*)', item)
             if not m:
                 raise_error("var name not found")
             self.weak_ast = m.group(1).count('*') * '*'
@@ -118,13 +150,18 @@ class StructField(object):
 
         else:
             # get array definition
+
+
+
             while True:
-                m = re.match(r'\s*\[\s*([0-9A-Fa-fx]*)\s*\]', item)
+                m = re.match(r'\s*\[\s*([0-9A-Fa-fx+\-*/% ]*)\s*\]', item)
                 if not m:
                     break
                 try:
-                    self.arr_list.append(int(m.group(1), 0))
-                except:
+                    num_text = m.group(1)
+                    self.arr_hex_num.append(not re.search("[+\-*/%]",num_text) and "x" in num_text)
+                    self.arr_list.append(eval(num_text))
+                except SyntaxError:
                     raise_error("bad num %s" % m.group(1))
                 item = item[m.end(0):]
 
@@ -157,18 +194,32 @@ class StructField(object):
 class HeaderStruct(object):
     def __init__(self, align):
         self.fields = []
-        self.struct_name = ''
+        self.name = ''
         self.align = align
+        self.comments = {}
 
 
     def __str__(self):
 
-        s = """struct %s
-{
-%s;
-};
-        """ % (self.struct_name,  ";\n".join( "\t" + str(s) for s in self.fields ))
-        return s
+        ret = """struct %s\n{\n%s;\n};"""
+        ret %=  (self.name, ";\n".join("\t" + str(f) for f in self.fields))
+        ret = self.fill_comments(ret)
+        return ret
+
+    def init_comments(self,text):
+        text = re.sub(r'/\*[\w\W]*?\*/', "", text)  # remove /**/ comments
+
+        for line in text.split("\n"):
+            m = re.search(r'\s*//.*',line)
+            if m:
+                a = line[:m.start()].strip()
+                if a:
+                    b = line[m.start():]
+                    self.comments[a] = b
+
+    def fill_comments(self,text):
+        out = [line + self.comments.get(line.strip(),"") for line in text.split("\n")]
+        return "\n".join(out)
 
     def parse(self, struct):
 
@@ -176,13 +227,13 @@ class HeaderStruct(object):
 
         :type struct: str
         """
-
+        self.init_comments(struct)
         struct = remove_comments(struct)
         m = re.match(r'\s*struct\s*([a-zA-Z_]\w*)\s*\{([\s\S]*?)\}', struct)
         if not m:
             raise_error("bad declaration")
 
-        self.struct_name = m.group(1)
+        self.name = m.group(1)
         body = m.group(2)
 
         items = [i for i in body.split(";") if re.search(r'\S', i)]
@@ -190,7 +241,7 @@ class HeaderStruct(object):
             f = StructField()
             f.parse(item)
             self.fields.append(f)
-            print f.type_string(), "\titem = ", item.replace("\n", "")
+            # print f.type_string(), "\titem = ", item.replace("\n", "")
 
     def field_offset(self, index):
         """
@@ -221,8 +272,8 @@ class HeaderStruct(object):
 
         """
         try:
-            i = self.fields.index(Key(lambda x: x.name == field_name))
-        except:
+            i = self.fields.index(Where(lambda x: x.name == field_name))
+        except ValueError:
             raise_error("field %s not found" % field_name)
 
         of = self.fields[i]
@@ -258,7 +309,7 @@ class HeaderStruct(object):
             shape = post_f.array_shape()
             shape[0] = rest_count
             post_f.set_array_shape(shape)
-            post_f.name = post_f.name + "_%s" % end_index
+            post_f.name += "_%s" % end_index
             self.fields.insert(i,post_f)
             i+=1
         pass
@@ -272,15 +323,55 @@ class HeaderStruct(object):
 class HFile:
     def __init__(self, filename):
         self.filename = filename
+        self.structs = []
+        self.struct_bounds = []
+        self.text = ""
+        self.parse()
 
     def struct_list(self):
-        pass
+        return [struct.name for struct in self.structs]
 
-    def insert(self, structure):
-        pass
+    def replace(self, structure):
+        idx = self.structs.index(Where(lambda x: x.name == structure.name))
+        left,right = self.struct_bounds[idx]
+        self.text = self.text[:left] + str(structure) + self.text[right:]
+
+    def save(self,fname = ""):
+        if not fname:
+            fname = self.filename
+        f = open(fname,"w")
+        f.write(self.text)
+        f.close()
 
     def get(self,struct_name):
-        pass
+        return Where(lambda x: x.name == struct_name).find(self.structs)
+
+
+    def parse(self):
+        f = open(self.filename,"r")
+        self.text = f.read()
+
+        start_idx = 0
+        while True:
+            m = re.search("struct [\w\W]*?\}[\w\W]*?;",self.text[start_idx:])
+            if not m:
+                break
+            try:
+                h = HeaderStruct(1)
+                h.parse(m.group(0))
+                self.structs.append(h)
+                self.struct_bounds.append( (m.start() + start_idx,m.end() + start_idx))
+                print "struct %s found in %s %s-%s" % (h.name,self.filename,m.start() + start_idx ,m.end() + start_idx)
+            except:
+                print "Error in file %s. Skip" % self.filename
+            start_idx += m.end()
+
+
+
+
+
+
+
 
 
 
@@ -312,20 +403,42 @@ e = """struct CLafFlash
 };
 
 """
-hs = HeaderStruct(1)
-hs.parse(s)
-
-
-print str(hs)
-print "struct size ", hs.size()
-
-hs.split_var("buf2", "int my_new_var", 4)
-
-print str(hs)
-print "struct size ", hs.size()
+# hs = HeaderStruct(1)
+# hs.parse(s)
+#
+#
+# print str(hs)
+# print "struct size ", hs.size()
+#
+# hs.split_var("buf2", "int my_new_var", 4)
+#
+# print str(hs)
+# print "struct size ", hs.size()
 
 
 # print "struct field count %s" % len(hs)
 #
 # print "struct size ", hs.size()
 #
+
+
+# import os
+#
+# for file in os.listdir("D:\IDA\MTK\LG\LGUPc_1.0.26.1\dylib\headers"):
+#     h = HFile(os.path.join("D:\IDA\MTK\LG\LGUPc_1.0.26.1\dylib\headers",file))
+#
+#     print "file", file, "\n"
+#
+#     for struct_name in h.struct_list():
+#         struct = h.get(struct_name)
+#         print str(struct)
+
+
+
+# h = HFile(r"D:\IDA\MTK\LG\LGUPc_1.0.26.1\dylib\headers\CEnvSetting.h")
+# struct = h.get("CEnvSetting")
+# struct.split_var("m_es_buf0","__int64 yyy",0)
+# h.replace(struct)
+# h.save(r"D:\IDA\MTK\LG\LGUPc_1.0.26.1\dylib\headers\CEnvSetting_test.h")
+
+
