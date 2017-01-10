@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>668</width>
-    <height>643</height>
+    <width>714</width>
+    <height>631</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -110,13 +110,26 @@ color: rgb(248, 248, 248);</string>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QPlainTextEdit" name="result_window">
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
+      <widget class="QScrollBar" name="verticalScrollBar">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPlainTextEdit" name="result_window_2">
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>

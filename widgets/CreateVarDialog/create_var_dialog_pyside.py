@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\PyIDA\widgets\CreateVarDialog\create_var_dialog.ui'
 #
-# Created: Mon Jan  9 13:48:47 2017
+# Created: Tue Jan 10 18:44:49 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_CreateVarDialog(object):
     def setupUi(self, CreateVarDialog):
         CreateVarDialog.setObjectName("CreateVarDialog")
-        CreateVarDialog.resize(668, 643)
+        CreateVarDialog.resize(714, 631)
         CreateVarDialog.setStyleSheet("background-color: rgb(34, 44, 40);\n"
 "color: rgb(248, 248, 248);")
         self.verticalLayout = QtGui.QVBoxLayout(CreateVarDialog)
@@ -62,10 +62,16 @@ class Ui_CreateVarDialog(object):
         self.horizontalLayout_5 = QtGui.QHBoxLayout()
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.result_window = QtGui.QPlainTextEdit(CreateVarDialog)
+        self.result_window.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.result_window.setReadOnly(True)
         self.result_window.setObjectName("result_window")
         self.horizontalLayout_5.addWidget(self.result_window)
+        self.verticalScrollBar = QtGui.QScrollBar(CreateVarDialog)
+        self.verticalScrollBar.setOrientation(QtCore.Qt.Vertical)
+        self.verticalScrollBar.setObjectName("verticalScrollBar")
+        self.horizontalLayout_5.addWidget(self.verticalScrollBar)
         self.result_window_2 = QtGui.QPlainTextEdit(CreateVarDialog)
+        self.result_window_2.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.result_window_2.setReadOnly(True)
         self.result_window_2.setObjectName("result_window_2")
         self.horizontalLayout_5.addWidget(self.result_window_2)

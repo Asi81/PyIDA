@@ -24,6 +24,7 @@ class QuickMenu(Ui_QuickMenu):
     RELOAD_HEADERS_CLICKED = 4
     GOTO_CLICKED = 5
     FIND_VCALL_CLICKED = 6
+    FIND_IN_HEADERS_CLICKED = 7
 
     def __init__(self):
 
@@ -35,6 +36,8 @@ class QuickMenu(Ui_QuickMenu):
         self.selected_text = idaapi.get_highlighted_identifier()
         self.reload_headers_btn.clicked.connect(self.reload_headers_btn_clicked)
         self.goto_btn.clicked.connect(self.goto_btn_clicked)
+
+        self.find_in_headers_btn.clicked.connect(self.find_in_headers_btn_clicked)
 
         self.find_in_decompiled_menu = QtGui.QMenu("",self.d)
         self.find_text_action =  self.find_in_decompiled_menu.addAction("Text/Var")
@@ -52,9 +55,6 @@ class QuickMenu(Ui_QuickMenu):
         self.create_vtable_action.triggered.connect(self.create_vtable_btn_clicked)
 
         self.create_btn.setMenu(self.create_menu)
-
-
-
 
         visual_style.set(self.d)
 
@@ -95,6 +95,11 @@ class QuickMenu(Ui_QuickMenu):
         self.d.accept()
         self.button_clicked = QuickMenu.FIND_VCALL_CLICKED
 
+    def find_in_headers_btn_clicked(self):
+        self.d.accept()
+        self.button_clicked = QuickMenu.FIND_IN_HEADERS_CLICKED
+
+
 
     def text(self):
         return self.selected_text
@@ -120,6 +125,10 @@ def launch():
             widgets.GoToDialog.launch(menu.text())
         elif btn_clicked == QuickMenu.FIND_VCALL_CLICKED:
             widgets.FindVirtualCallDialog.launch()
+        elif btn_clicked == QuickMenu.FIND_IN_HEADERS_CLICKED:
+            widgets.FindTextDialog.launch_headers_search()
+
+
     except:
         traceback.print_exc()
         widgets.TracebackDialog.set_last_exception(sys.exc_info())

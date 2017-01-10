@@ -6,14 +6,10 @@ import re
 from mybase import _declaration
 
 
+from proj import pointer_size,search_results_file,headers_folder
+
 
 dump_file = os.path.join(os.getcwd(),'decompiled.c')
-search_results_file = os.path.join(os.getcwd(),'search_results.txt')
-headers_folder = os.path.join(os.getcwd(),'headers')
-
-
-pointer_size = 8 if idaapi.get_inf_structure().is_64bit() else 4
-processor_typ = idaapi.get_inf_structure().procName
 
 
 
@@ -194,7 +190,8 @@ class VirtualTable(object):
         # print "added arg", arg
         self.args.append(arg)
 
-    def declaration(self,ea):
+    @staticmethod
+    def declaration(ea):
         return _declaration.demangle(idc.Name(ea))
 
     def fill(self, vtable_ea):
@@ -261,3 +258,38 @@ def find_virtual_call(fn):
     if not hasattr(find_virtual_call,"l"):
         find_virtual_call.l = virtual_call_funcs()
     return find_text(fn,standalone=True,funcs=find_virtual_call.l)
+
+
+
+def find_text_in_headers(filter_text, regex = False, standalone = False, cur_folder = ""):
+
+    ret = []
+
+    if not cur_folder:
+        cur_folder = headers_folder
+
+    for fl in os.listdir(cur_folder):
+        filename = os.path.join(cur_folder,fl)
+        if os.path.isdir(filename):
+            ret.extend(find_text_in_headers(filename))
+        elif os.path.isfile(filename):
+            if filename.split(".")[-1] in ["h","hpp"]:
+                f = open(filename,"r")
+                for line,text in enumerate(f.readlines()):
+
+                    if regex:
+                        found = re.search(filter_text,text)
+                    elif standalone:
+                        def eee(x):
+                            return '\\%s' % x if re.match('\W', x) else x
+                        filter2 = "".join([eee(s) for s in filter_text])
+                        found = re.search(r'\b' + filter2 + r'\b', text)
+                    else:
+                        found = filter_text in text
+
+                    if found:
+                        dct = {'line': line, 'text': text, 'filename': filename}
+                        ret.append(dct)
+                f.close()
+    return ret
+

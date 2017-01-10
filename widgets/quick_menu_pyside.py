@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\PyIDA\widgets\quick_menu.ui'
 #
-# Created: Mon Jan  9 13:58:33 2017
+# Created: Mon Jan  9 16:30:13 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -35,6 +35,9 @@ class Ui_QuickMenu(object):
         self.find_in_decompiled_btn = QtGui.QPushButton(QuickMenu)
         self.find_in_decompiled_btn.setObjectName("find_in_decompiled_btn")
         self.verticalLayout.addWidget(self.find_in_decompiled_btn)
+        self.find_in_headers_btn = QtGui.QPushButton(QuickMenu)
+        self.find_in_headers_btn.setObjectName("find_in_headers_btn")
+        self.verticalLayout.addWidget(self.find_in_headers_btn)
         self.create_btn = QtGui.QPushButton(QuickMenu)
         self.create_btn.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         self.create_btn.setObjectName("create_btn")
@@ -57,6 +60,7 @@ class Ui_QuickMenu(object):
         QuickMenu.setWindowTitle(QtGui.QApplication.translate("QuickMenu", "Quick menu", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("QuickMenu", "Selected:", None, QtGui.QApplication.UnicodeUTF8))
         self.find_in_decompiled_btn.setText(QtGui.QApplication.translate("QuickMenu", "Find in decompiled", None, QtGui.QApplication.UnicodeUTF8))
+        self.find_in_headers_btn.setText(QtGui.QApplication.translate("QuickMenu", "Find in headers", None, QtGui.QApplication.UnicodeUTF8))
         self.create_btn.setText(QtGui.QApplication.translate("QuickMenu", "Create", None, QtGui.QApplication.UnicodeUTF8))
         self.reload_headers_btn.setText(QtGui.QApplication.translate("QuickMenu", "Reload headers", None, QtGui.QApplication.UnicodeUTF8))
         self.goto_btn.setText(QtGui.QApplication.translate("QuickMenu", "Go To Name", None, QtGui.QApplication.UnicodeUTF8))
