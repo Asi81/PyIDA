@@ -1,17 +1,9 @@
-import re
 import idaapi
+import re
 import copy
+from syntax import Where
 
 
-
-class Where(object):
-    def __init__(self, pred): self.pred = pred
-    def __eq__(self, other): return self.pred(other)
-    def find(self,iterator):
-        for v in iterator:
-            if self == v:
-                return v
-        return None
 
 pointer_size = 8 if idaapi.get_inf_structure().is_64bit() else 4
 
@@ -25,7 +17,8 @@ def sizeof(typ):
         return pointer_size
 
     builtin = {'int': 4, 'unsigned int': 4, 'short': 2, 'unsigned short': 2, 'char': 1, 'unsigned char': 1,
-               '__int64': 8, 'pvoid': pointer_size, 'pdword': pointer_size}
+               '__int64': 8, 'pvoid': pointer_size, 'pdword': pointer_size, "_DWORD": 4, "_BYTE": 1,
+               "_WORD": 2, 'PDWORD': pointer_size, 'PVOID': pointer_size,"_QWORD": 8}
 
     if typ not in builtin.keys():
         raise_error("Unknown type %s" % typ)
@@ -259,7 +252,7 @@ class HeaderStruct(object):
         a = min(self.align, a)
         return (self.field_offset(len(self.fields)) + a - 1) / a * a
 
-    def fields(self):
+    def names(self):
         return [f.name for f in self.fields]
 
     def split_var(self, field_name, new_var_str, arr_index = 0):
@@ -278,6 +271,9 @@ class HeaderStruct(object):
 
         of = self.fields[i]
         nf = StructField(new_var_str)
+
+        if nf.name in self.names():
+            raise_error("Var %s is already in %s" % (nf.name, self.name)  )
 
         if nf.size() % of.divisible_size():
             raise_error("New size = %s  should be divisible of %s" % (nf.size(),of.divisible_size()))
@@ -346,6 +342,10 @@ class HFile:
     def get(self,struct_name):
         return Where(lambda x: x.name == struct_name).find(self.structs)
 
+    def bounds(self,struct_name):
+        i = self.structs.index(Where(lambda x: x.name == struct_name))
+        return self.struct_bounds[i]
+
 
     def parse(self):
         f = open(self.filename,"r")
@@ -362,17 +362,9 @@ class HFile:
                 self.structs.append(h)
                 self.struct_bounds.append( (m.start() + start_idx,m.end() + start_idx))
                 print "struct %s found in %s %s-%s" % (h.name,self.filename,m.start() + start_idx ,m.end() + start_idx)
-            except:
+            except BaseException:
                 print "Error in file %s. Skip" % self.filename
             start_idx += m.end()
-
-
-
-
-
-
-
-
 
 
 
@@ -424,8 +416,8 @@ e = """struct CLafFlash
 
 # import os
 #
-# for file in os.listdir("D:\IDA\MTK\LG\LGUPc_1.0.26.1\dylib\headers"):
-#     h = HFile(os.path.join("D:\IDA\MTK\LG\LGUPc_1.0.26.1\dylib\headers",file))
+# for file in os.listdir("D:\IDA\headers"):
+#     h = HFile(os.path.join("D:\IDA\headers",file))
 #
 #     print "file", file, "\n"
 #
@@ -435,10 +427,10 @@ e = """struct CLafFlash
 
 
 
-# h = HFile(r"D:\IDA\MTK\LG\LGUPc_1.0.26.1\dylib\headers\CEnvSetting.h")
-# struct = h.get("CEnvSetting")
+# h = HFile(r"D:\IDA\ting.h")
+# struct = h.get("ting")
 # struct.split_var("m_es_buf0","__int64 yyy",0)
 # h.replace(struct)
-# h.save(r"D:\IDA\MTK\LG\LGUPc_1.0.26.1\dylib\headers\CEnvSetting_test.h")
+# h.save(r"D:\IDA\ting_test.h")
 
 

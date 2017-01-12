@@ -5,8 +5,7 @@ import os
 import re
 from mybase import _declaration
 
-
-from proj import pointer_size,search_results_file,headers_folder
+from proj import pointer_size,search_results_file,headers_folder,header_files
 
 
 dump_file = os.path.join(os.getcwd(),'decompiled.c')
@@ -24,7 +23,7 @@ def sizeof(typ):
         return pointer_size
 
     builtin = {'int': 4, 'unsigned int': 4, 'short': 2, 'unsigned short': 2, 'char': 1, 'unsigned char': 1,
-               'pvoid': pointer_size, 'pdword': pointer_size}
+               'pvoid': pointer_size, 'pdword': pointer_size, '_DWORD': 4}
 
     return builtin[typ] 
 
@@ -124,12 +123,10 @@ def find_text(filter_text, only_named = True, regex = False, standalone = False,
 
 
 def reload_headers():
-    for fl in os.listdir(headers_folder):
-        # idc.ProcessUiAction("LoadHeaderFile")
-        if fl.split(".")[-1] == 'h' and len(fl)>2  and os.path.isfile(os.path.join(headers_folder,fl)):
-            print "loading %s" % os.path.join(headers_folder,fl)
-            if idc.ParseTypes(os.path.join(headers_folder,fl),idc.PT_FILE | idc.PT_PAKDEF) == 0:
-                print("Successful")
+    for fl in header_files():
+        print "loading %s" % fl
+        if idc.ParseTypes(fl,idc.PT_FILE | idc.PT_PAKDEF) == 0:
+            print("Successful")
 
 
 
