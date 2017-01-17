@@ -18,6 +18,16 @@
     <widget class="QListWidget" name="goto_list"/>
    </item>
    <item>
+    <widget class="QCheckBox" name="hide_unkfunc_cb">
+     <property name="text">
+      <string>Hide unnamed functions sub_*</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLineEdit" name="filter_edit"/>
    </item>
    <item>

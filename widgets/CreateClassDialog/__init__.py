@@ -5,6 +5,7 @@ import string
 import decompiled
 import os
 from widgets import visual_style
+import idc
 
 
 #try create proper class name from string
@@ -98,7 +99,8 @@ class Dialog(Ui_CreateClassDialog):
         f = open(fn,'w')
         f.write(self.class_definition())
         f.close()
-        print("File %s with class %s created" %  (self.class_filename_edit.text(), self.class_name_edit.text()))
+        idc.ParseTypes(fn, idc.PT_FILE | idc.PT_PAKDEF)
+        print("File %s with class %s created and loaded into ida" %  (self.class_filename_edit.text(), self.class_name_edit.text()))
         return True
 
 

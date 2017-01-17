@@ -11,10 +11,21 @@ from proj import pointer_size,search_results_file,headers_folder,header_files
 dump_file = os.path.join(os.getcwd(),'decompiled.c')
 
 
+def struct_name_hint(struct_name):
+    struct_name = str(struct_name)
+    if struct_name.startswith("C") and  struct_name[1].isupper():
+        struct_name = struct_name[1:]
+
+    short = "".join(s for s in struct_name if s.isupper())
+
+    if len(short) >=2:
+        return short.lower()
+    return struct_name[:3].lower()
 
 def create_class(nm, sz):
-    base_str = "struct %s\n{\n\tchar buf0[%s];\n};\n"
-    return base_str % (nm,sz)
+    nm_hint = struct_name_hint(nm)
+    base_str = "struct %s\n{\n\tchar %s_buf_0[%s];\n};\n"
+    return base_str % (nm,nm_hint,sz)
 
 
 def sizeof(typ):

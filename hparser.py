@@ -305,7 +305,13 @@ class HeaderStruct(object):
             shape = post_f.array_shape()
             shape[0] = rest_count
             post_f.set_array_shape(shape)
-            post_f.name += "_%s" % end_index
+
+            m = re.match("(.*)?_(\d+)",post_f.name)
+            if m:
+                end_index += eval(m.group(2))
+                post_f.name =  m.group(1) + "_%s" % end_index
+            else:
+                post_f.name += "_%s" % end_index
             self.fields.insert(i,post_f)
             i+=1
         pass

@@ -11,6 +11,10 @@ import shutil
 import diff
 import copy
 from syntax import Where
+import decompiled
+
+
+
 
 
 class Dialog(Ui_CreateVarDialog):
@@ -64,8 +68,21 @@ class Dialog(Ui_CreateVarDialog):
         text = idaapi.get_highlighted_identifier()
         parse_result = parse_c_str(text)
 
-        self.newvar_name_edit.setText(parse_result.newtype + " m_unkn_var")
+
         self.old_var_name_edit.setText(parse_result.varname)
+
+        l =  self.field_to_struct_table.get(parse_result.varname,[])
+        if len(l) == 1:
+            self.class_cb.setEditText(l[0])
+            new_var =  "m_" + decompiled.struct_name_hint(l[0]) + "_unkn_var_"
+            index = 1
+            while "%s%s"%(new_var,index) in self.old_struct.names():
+                index+=1
+            new_var = "%s%s"%(new_var,index)
+            self.newvar_name_edit.setText(parse_result.newtype + " " + new_var)
+        else:
+            self.newvar_name_edit.setText(parse_result.newtype + " m_unkn_var_1")
+
         self.array_index_edit.setText(str(parse_result.arr_index))
 
         self.d.exec_()
@@ -268,10 +285,10 @@ def parse_c_str(text):
             out.arr_index = eval(m.group(1))
 
     print left
-    m = re.search("\((\w+) \*\)",left)
+    m = re.search("(\**)\(([A-Za-z_:]+)\s*(\**)\)",left)
     if m:
-        out.newtype = m.group(1)
-        print m.group(0)
 
+        v = len(m.group(3)) - len(m.group(1))
+        fin = "*" * v if v>0 else ""
+        out.newtype = m.group(2) + fin
     return  out
-

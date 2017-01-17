@@ -18,6 +18,7 @@ class Dialog(Ui_FindFuncDialog):
         self.cancel_btn.clicked.connect(self.cancel_btn_clicked)
         self.goto_list.itemDoubleClicked.connect(self.item_double_clicked)
         self.filter_edit.textChanged.connect(self.filter_edit_changed)
+        self.hide_unkfunc_cb.stateChanged.connect(self.filter_edit_changed)
         visual_style.set(self.d)
 
 
@@ -31,8 +32,13 @@ class Dialog(Ui_FindFuncDialog):
                     return False
             return True
 
+        ret = [nm for nm in self.texts if ff(nm)]
+
+        if self.hide_unkfunc_cb.isChecked():
+            ret = [nm for nm in ret if not nm.startswith("sub_")]
+
         self.goto_list.clear()
-        self.goto_list.addItems([nm for nm in self.texts if ff(nm)])
+        self.goto_list.addItems(ret)
 
 
 
@@ -40,10 +46,15 @@ class Dialog(Ui_FindFuncDialog):
         self.texts = []
         self.jump_list = {}
 
-        for n in idautils.Names():
-            dn = idc.Demangle(n[1],0) if idc.Demangle(n[1],0) else n[1]
-            self.texts.append(dn)
-            self.jump_list[dn] = n[0]
+        m = {}
+        for ea,name in idautils.Names():
+            m[ea] = name
+
+        for ea in idautils.Functions():
+            n = m.get(ea,"sub_" + hex(ea)[2:].replace("L",""))
+            n = idc.Demangle(n,0) if idc.Demangle(n,0) else n
+            self.texts.append(n)
+            self.jump_list[n] = ea
 
         self.filter_edit_changed()
         self.filter_edit.setFocus()
