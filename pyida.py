@@ -7,6 +7,7 @@ import widgets.find_text_table
 import widgets.header_found_table
 import widgets.TracebackDialog
 import widgets.FindFuncDialog
+import binary_finder
 
 
 def launch_quick_menu():
@@ -40,7 +41,10 @@ def add_menu_item(menupath, name, hotkey, flags, pyfunc,args):
 
 #init hotkeys
 add_hotkey("Alt-Shift-Q",launch_quick_menu)
-add_hotkey("Alt-Shift-O",widgets.FindFuncDialog.launch)
+
+add_menu_item("Search/", "Find Crc tables",None,0, binary_finder.crc_table_find,None)
+add_menu_item("Search/", "Find Function","Alt-Shift-O",0,widgets.FindFuncDialog.launch,None)
+add_menu_item("Edit/", "Create Crc table here...",None,0, binary_finder.create_crc_table,None)
 add_menu_item("File/Produce file/", "Create strings-to-function",None,0,export_func_names,None)
 add_menu_item("View/","Exception traceback",'Alt-Shift-M',0, widgets.TracebackDialog.launch,None)
 add_menu_item("View/","Decompiled search",None,0, widgets.find_text_table.show,None)

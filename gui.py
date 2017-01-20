@@ -8,7 +8,7 @@ def ask(question,title = None, default_ans = False):
                                     QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
                                     QtGui.QMessageBox.Yes if default_ans else QtGui.QMessageBox.No)
 
-    return False if choice==0 else True
+    return False if choice == QtGui.QMessageBox.StandardButton.No else True
 
 
 
