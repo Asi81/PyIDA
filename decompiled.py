@@ -34,7 +34,7 @@ def sizeof(typ):
         return pointer_size
 
     builtin = {'int': 4, 'unsigned int': 4, 'short': 2, 'unsigned short': 2, 'char': 1, 'unsigned char': 1,
-               'pvoid': pointer_size, 'pdword': pointer_size, '_DWORD': 4}
+               'pvoid': pointer_size, 'pdword': pointer_size, '_DWORD': 4, 'WCHAR': 2}
 
     return builtin[typ] 
 

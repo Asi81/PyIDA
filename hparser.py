@@ -18,7 +18,8 @@ def sizeof(typ):
 
     builtin = {'int': 4, 'unsigned int': 4, 'short': 2, 'unsigned short': 2, 'char': 1, 'unsigned char': 1,
                '__int64': 8, 'pvoid': pointer_size, 'pdword': pointer_size, "_DWORD": 4, "_BYTE": 1,
-               "_WORD": 2, 'PDWORD': pointer_size, 'PVOID': pointer_size,"_QWORD": 8}
+               "_WORD": 2, 'PDWORD': pointer_size, 'PVOID': pointer_size,"_QWORD": 8, "WCHAR": 2,
+               "PWORD": pointer_size }
 
     if typ not in builtin.keys():
         raise_error("Unknown type %s" % typ)
