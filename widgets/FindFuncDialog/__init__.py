@@ -5,13 +5,14 @@ import idc
 import idautils
 
 
-class Dialog(Ui_FindFuncDialog):
+last_typed_text = ""
 
+class Dialog(Ui_FindFuncDialog):
     def __init__(self):
 
         super(Ui_FindFuncDialog,self).__init__()
         self.d = QtGui.QDialog()
-        self.texts = []
+        self.func_names = []
         self.jump_list = {}
         self.setupUi(self.d)
         self.goto_btn.clicked.connect(self.goto_btn_clicked)
@@ -23,16 +24,18 @@ class Dialog(Ui_FindFuncDialog):
 
 
     def filter_edit_changed(self):
-        flt = self.filter_edit.text().split(" ")
+        global last_typed_text
+        last_typed_text = self.filter_edit.text()
+        flt = last_typed_text.split(" ")
         flt = [f for f in flt if f]
 
-        def ff(nm):
+        def ff(func_name):
             for item in flt:
-                if item.upper() not in nm.upper():
+                if item.upper() not in func_name.upper():
                     return False
             return True
 
-        ret = [nm for nm in self.texts if ff(nm)]
+        ret = [nm for nm in self.func_names if ff(nm)]
 
         if self.hide_unkfunc_cb.isChecked():
             ret = [nm for nm in ret if not nm.startswith("sub_")]
@@ -43,8 +46,11 @@ class Dialog(Ui_FindFuncDialog):
 
 
     def launch(self):
-        self.texts = []
+        global last_typed_text
+        self.func_names = []
         self.jump_list = {}
+        self.filter_edit.setText(last_typed_text)
+        self.filter_edit.selectAll()
 
         m = {}
         for ea,name in idautils.Names():
@@ -53,7 +59,7 @@ class Dialog(Ui_FindFuncDialog):
         for ea in idautils.Functions():
             n = m.get(ea,"sub_" + hex(ea)[2:].replace("L",""))
             n = idc.Demangle(n,0) if idc.Demangle(n,0) else n
-            self.texts.append(n)
+            self.func_names.append(n)
             self.jump_list[n] = ea
 
         self.filter_edit_changed()

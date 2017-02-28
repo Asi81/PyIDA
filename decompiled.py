@@ -301,3 +301,15 @@ def find_text_in_headers(filter_text, regex = False, standalone = False, cur_fol
                 f.close()
     return ret
 
+
+
+def make_strings_const():
+    s = idautils.Strings(False)
+    s.setup(strtypes=idautils.Strings.STR_UNICODE | idautils.Strings.STR_C)
+
+    for v in s:
+        gt = idc.GetType(v.ea)
+        if not gt:
+            gt = idc.GuessType(v.ea)
+        if gt and not gt.startswith("const "):
+            idc.SetType(v.ea, "const " + gt)

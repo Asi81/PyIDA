@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\HOME\Google Диск\Python\PyIDA\widgets\FindFuncDialog\find_func_dialog.ui'
+# Form implementation generated from reading ui file 'D:\PyIDA\widgets\FindFuncDialog\find_func_dialog.ui'
 #
-# Created: Sat Jan 14 20:40:39 2017
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+# Created: Thu Feb 23 14:17:57 2017
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_FindFuncDialog(object):
     def setupUi(self, FindFuncDialog):
         FindFuncDialog.setObjectName("FindFuncDialog")
-        FindFuncDialog.resize(522, 413)
+        FindFuncDialog.resize(757, 413)
         self.verticalLayout = QtGui.QVBoxLayout(FindFuncDialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.goto_list = QtGui.QListWidget(FindFuncDialog)

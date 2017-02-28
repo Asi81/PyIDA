@@ -48,4 +48,4 @@ class Dialog(Ui_GoToDialog):
 def launch(func_name):
     import goto
     dialog = Dialog()
-    dialog.launch(goto.similar_names_list(func_name))
+    dialog.launch(goto.similar_func_list(func_name))
