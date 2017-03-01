@@ -99,7 +99,7 @@ class Dialog(Ui_CreateClassDialog):
         f = open(fn,'w')
         f.write(self.class_definition())
         f.close()
-        idc.ParseTypes(fn, idc.PT_FILE | idc.PT_PAKDEF)
+        idc.ParseTypes(str(fn), idc.PT_FILE | idc.PT_PAKDEF)
         print("File %s with class %s created and loaded into ida" %  (self.class_filename_edit.text(), self.class_name_edit.text()))
         return True
 

@@ -1,6 +1,7 @@
 import idaapi
 import re
 import copy
+import idc
 from syntax import Where
 
 
@@ -13,6 +14,12 @@ def raise_error(error_text):
 
 
 def sizeof(typ):
+
+    if not typ:
+        raise_error("empty struct name")
+
+    typ = str(typ)
+
     if typ.endswith("*"):
         return pointer_size
 
@@ -21,9 +28,13 @@ def sizeof(typ):
                "_WORD": 2, 'PDWORD': pointer_size, 'PVOID': pointer_size,"_QWORD": 8, "WCHAR": 2,
                "PWORD": pointer_size }
 
-    if typ not in builtin.keys():
-        raise_error("Unknown type %s" % typ)
-    return builtin[typ]
+    if typ in builtin.keys():
+        return builtin[typ]
+
+    sid = idc.GetStrucIdByName(typ)
+    if (sid is None) or (sid == 0) or (sid == idc.BADADDR):
+        raise_error('Failed to get tid_t for %s' % typ)
+    return idc.GetStrucSize(sid)
 
 
 def remove_comments(cl):
