@@ -6,6 +6,7 @@ import idautils
 
 
 last_typed_text = ""
+last_selected_row = 0
 
 class Dialog(Ui_FindFuncDialog):
     def __init__(self):
@@ -47,10 +48,12 @@ class Dialog(Ui_FindFuncDialog):
 
     def launch(self):
         global last_typed_text
+        global last_selected_row
         self.func_names = []
         self.jump_list = {}
         self.filter_edit.setText(last_typed_text)
         self.filter_edit.selectAll()
+        self.goto_list.setCurrentRow(last_selected_row)
 
         m = {}
         for ea,name in idautils.Names():
@@ -67,7 +70,9 @@ class Dialog(Ui_FindFuncDialog):
         self.d.exec_()
 
     def goto_btn_clicked(self):
+        global last_selected_row
         list_item = self.goto_list.currentItem()
+        last_selected_row = self.goto_list.currentRow()
         if list_item:
             func_name = list_item.text()
             idc.Jump(self.jump_list[func_name])

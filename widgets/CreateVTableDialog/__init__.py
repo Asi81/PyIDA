@@ -57,7 +57,8 @@ class Dialog(Ui_CreateVTableDialog):
         f = open(fn,'w')
         f.write(self.textEdit.toPlainText())
         f.close()
-        print("File %s with virtual table %s created" %  (self.filename_edit.text(), self.name_edit.text()))
+        idc.ParseTypes(str(fn)  , idc.PT_FILE | idc.PT_PAKDEF)
+        print("File %s with virtual table %s created and loaded into Ida" %  (self.filename_edit.text(), self.name_edit.text()))
         return True
 
 
@@ -66,7 +67,7 @@ class Dialog(Ui_CreateVTableDialog):
         self.d.accept()
 
     def redraw(self):
-        if (self.name_edit.text() != self.vtable.name()):
+        if self.name_edit.text() != self.vtable.name():
             self.name_edit.setText(self.vtable.name())
         self.textEdit.setText(str(self.vtable))
         if not self.header_file_cb.isChecked():

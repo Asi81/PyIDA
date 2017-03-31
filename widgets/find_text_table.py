@@ -7,6 +7,16 @@ import idc
 PLUGIN_NAME = "Decompiled functions search results"
 
 
+def jump_to_line(ea, line, col):
+    idc.Jump(ea)
+    viewer = idaapi.get_current_viewer()
+    (pl, x, y) = idaapi.get_custom_viewer_place(viewer, False)
+    pl2 = idaapi.place_t_as_simpleline_place_t(pl.clone())
+    pl2.n = line
+    x = col
+    y = 10
+    idaapi.jumpto(viewer, pl2, x, y)
+
 # --------------------------------------------------------------------------
 class TableModel_t(QtCore.QAbstractTableModel):
     """Model for the table """
@@ -149,8 +159,9 @@ class TableView_t(QtGui.QTableView):
         row  = self.rowAt(event.pos().y())
         m = self.model()
         ea = m.raw_data(row,"ea")
-        print "ea = %s" % ea
-        idc.Jump(ea)
+        line = m.raw_data(row,"lineno")
+        col = m.raw_data(row,"col")
+        jump_to_line(ea,line-1,col)
         super(QtGui.QTableView, self).mouseDoubleClickEvent(event)
 
     def contextMenuEvent(self,event):

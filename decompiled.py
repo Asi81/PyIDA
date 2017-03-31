@@ -6,6 +6,7 @@ import re
 from mybase import _declaration
 
 from proj import pointer_size,search_results_file,headers_folder,header_files
+import rename
 
 
 dump_file = os.path.join(os.getcwd(),'decompiled.c')
@@ -40,12 +41,6 @@ def sizeof(typ):
 
 
 
-def create_var(nm,tpy,src_str):
-    pass
-
-
-
-
 def dump_functions(filter_text = None, fname = None):
     if fname is None:
         fname = dump_file
@@ -71,7 +66,6 @@ def dump_functions(filter_text = None, fname = None):
             continue
         f.write(str(cfunc) + "\n\n\n")
     print "Dump complete. File %s" % fname
-
 
 
 
@@ -125,6 +119,12 @@ def find_text(filter_text, only_named = True, regex = False, standalone = False,
                 dct['function'] = funcname
                 dct['ea'] = head
                 dct['func_body'] = str(cfunc)
+
+                if isinstance(m,bool):
+                    dct['col'] = line.index(filter_text)
+                else:
+                    dct['col'] = m.start()
+
                 table.append(dct)
         # if len(table) > 5:
         #     break
@@ -179,6 +179,8 @@ class VirtualTable(object):
         m = re.match("(\w*)::(.*?)\(", func_decl)
         fname = m.group(2) if m else func_decl
         fname = fname.replace("~", "deconstructor_")
+        if rename.is_operator_func(fname):
+            fname = rename.remove_operator_symbols(fname)
 
         f = fname
         i = 2
@@ -195,6 +197,8 @@ class VirtualTable(object):
         else:
             arg = "(void* self)"
         arg = arg.replace(", )", ")").replace(", void)", ")")
+        if arg.endswith("const"):
+            arg = arg[:-5]
         # print "added arg", arg
         self.args.append(arg)
 
@@ -276,11 +280,9 @@ def find_text_in_headers(filter_text, regex = False, standalone = False, cur_fol
     if not cur_folder:
         cur_folder = headers_folder
 
-    for fl in os.listdir(cur_folder):
-        filename = os.path.join(cur_folder,fl)
-        if os.path.isdir(filename):
-            ret.extend(find_text_in_headers(filename))
-        elif os.path.isfile(filename):
+    for root,dirs,files in os.walk(cur_folder):
+        for fl in files:
+            filename = os.path.join(root,fl)
             if filename.split(".")[-1] in ["h","hpp"]:
                 f = open(filename,"r")
                 for line,text in enumerate(f.readlines()):

@@ -2,7 +2,7 @@ from PySide import QtGui
 from widgets import visual_style
 from  widgets.GoToDialog.go_to_dialog_pyside import Ui_GoToDialog
 import idc
-
+import rename
 
 
 class Dialog(Ui_GoToDialog):
@@ -48,4 +48,8 @@ class Dialog(Ui_GoToDialog):
 def launch(func_name):
     import goto
     dialog = Dialog()
-    dialog.launch(goto.similar_func_list(func_name))
+    l = goto.similar_func_list(func_name)
+    if rename.is_removed_operator_func(func_name):
+        f2 = rename.getback_operator_symbols(func_name)
+        l.extend(goto.similar_func_list(f2))
+    dialog.launch(l)
