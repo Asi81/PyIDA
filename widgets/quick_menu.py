@@ -12,6 +12,7 @@ from widgets import visual_style
 import decompiled
 import sys
 import traceback
+import RenameVarDialog
 
 
 
@@ -25,6 +26,7 @@ class QuickMenu(Ui_QuickMenu):
     GOTO_CLICKED = 5
     FIND_VCALL_CLICKED = 6
     FIND_IN_HEADERS_CLICKED = 7
+    RENAME_CLICKED = 8
 
     def __init__(self):
 
@@ -53,6 +55,7 @@ class QuickMenu(Ui_QuickMenu):
         self.create_class_action.triggered.connect(self.create_class_btn_clicked)
         self.create_var_action.triggered.connect(self.create_var_btn_clicked)
         self.create_vtable_action.triggered.connect(self.create_vtable_btn_clicked)
+        self.rename_btn.clicked.connect(self.rename_btn_clicked)
 
         self.create_btn.setMenu(self.create_menu)
 
@@ -99,6 +102,11 @@ class QuickMenu(Ui_QuickMenu):
         self.d.accept()
         self.button_clicked = QuickMenu.FIND_IN_HEADERS_CLICKED
 
+    def rename_btn_clicked(self):
+        self.d.accept()
+        self.button_clicked = QuickMenu.RENAME_CLICKED
+
+
 
 
     def text(self):
@@ -127,6 +135,9 @@ def launch():
             widgets.FindVirtualCallDialog.launch()
         elif btn_clicked == QuickMenu.FIND_IN_HEADERS_CLICKED:
             widgets.FindTextDialog.launch_headers_search()
+        elif btn_clicked == QuickMenu.RENAME_CLICKED:
+            widgets.RenameVarDialog.launch()
+
 
 
     except:

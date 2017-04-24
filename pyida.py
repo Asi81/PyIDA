@@ -12,6 +12,7 @@ import widgets.ReplaceDialog
 import binary_finder
 import decompiled
 import wpsearch
+import widgets.BinaryDumpDialog
 
 def launch_quick_menu():
     widgets.quick_menu.launch()
@@ -51,6 +52,7 @@ add_menu_item("Search/PyIDA/", "Find Function","Alt-Shift-O",0,widgets.FindFuncD
 add_menu_item("Edit/PyIDA/", "Create Crc table here...",None,0, binary_finder.create_crc_table,None)
 add_menu_item("Edit/PyIDA/", "Make all strings const",None,0, decompiled.make_strings_const ,None)
 add_menu_item("Edit/PyIDA/", "Replace Names",None,0, widgets.ReplaceDialog.launch ,None)
+add_menu_item("Edit/PyIDA/", "Save binary dump",None,0, widgets.BinaryDumpDialog.launch ,None)
 add_menu_item("File/Produce file/PyIDA/", "Create strings-to-function",None,0,export_func_names,None)
 add_menu_item("View/PyIDA/","Exception traceback",'Alt-Shift-M',0, widgets.TracebackDialog.launch,None)
 add_menu_item("View/PyIDA/","Decompiled search",None,0, widgets.find_text_table.show,None)

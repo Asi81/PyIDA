@@ -7,7 +7,7 @@ from mybase import _declaration
 
 from proj import pointer_size,search_results_file,headers_folder,header_files
 import rename
-
+import proj
 
 dump_file = os.path.join(os.getcwd(),'decompiled.c')
 
@@ -25,7 +25,7 @@ def struct_name_hint(struct_name):
 
 def create_class(nm, sz):
     nm_hint = struct_name_hint(nm)
-    base_str = "struct %s\n{\n\tchar %s_buf_0[%s];\n};\n"
+    base_str = "#pragma once\n#pragma pack(1)\n\nstruct %s\n{\n\tchar %s_undefined_0[%s];\n};\n\n#pragma pack()\n\n"
     return base_str % (nm,nm_hint,sz)
 
 
@@ -273,34 +273,27 @@ def find_virtual_call(fn):
 
 
 
-def find_text_in_headers(filter_text, regex = False, standalone = False, cur_folder = ""):
+def find_text_in_headers(filter_text, regex = False, standalone = False):
 
     ret = []
+    for filename in  proj.header_files():
+        f = open(filename,"r")
+        for line,text in enumerate(f.readlines()):
 
-    if not cur_folder:
-        cur_folder = headers_folder
+            if regex:
+                found = re.search(filter_text,text)
+            elif standalone:
+                def eee(x):
+                    return '\\%s' % x if re.match('\W', x) else x
+                filter2 = "".join([eee(s) for s in filter_text])
+                found = re.search(r'\b' + filter2 + r'\b', text)
+            else:
+                found = filter_text in text
 
-    for root,dirs,files in os.walk(cur_folder):
-        for fl in files:
-            filename = os.path.join(root,fl)
-            if filename.split(".")[-1] in ["h","hpp"]:
-                f = open(filename,"r")
-                for line,text in enumerate(f.readlines()):
-
-                    if regex:
-                        found = re.search(filter_text,text)
-                    elif standalone:
-                        def eee(x):
-                            return '\\%s' % x if re.match('\W', x) else x
-                        filter2 = "".join([eee(s) for s in filter_text])
-                        found = re.search(r'\b' + filter2 + r'\b', text)
-                    else:
-                        found = filter_text in text
-
-                    if found:
-                        dct = {'line': line, 'text': text, 'filename': filename}
-                        ret.append(dct)
-                f.close()
+            if found:
+                dct = {'line': line, 'text': text, 'filename': filename}
+                ret.append(dct)
+        f.close()
     return ret
 
 

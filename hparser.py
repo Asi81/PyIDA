@@ -55,6 +55,7 @@ class StructField(object):
         self.sign = ""
         self.name = ""
         self.const_modif = ""
+        self.call_conven = ""
         if item:
             self.parse(item)
 
@@ -64,6 +65,9 @@ class StructField(object):
 
     def set_array_shape(self,shape):
         self.arr_list = copy.copy(shape)
+
+    def set_name(self,new_name):
+        self.name = new_name
 
     def type_string(self):
 
@@ -75,16 +79,20 @@ class StructField(object):
         return full_type
 
     def __str__(self):
+
+        ret = "%s %s %s%s" % (self.const_modif, self.sign, self.typ, self.weak_ast)
+        if self.strong_ast:
+            ret += "("
+        ret += "%s %s%s" % (self.call_conven, self.strong_ast, self.name)
+        if self.strong_ast:
+            ret += ")"
+
         def tostr(x,d):
             return  "[%s]" % (hex(x) if d else str(x))
         arrstr =  "".join(map(tostr,self.arr_list,self.arr_hex_num))
+        ret += "%s%s" % (self.fun_args, arrstr)
 
-        show_name = self.name
-        if self.strong_ast:
-            show_name = self.strong_ast.replace(")", " %s)" % self.name  )
-        definition = "%s %s %s%s %s%s%s" % (self.const_modif, self.sign, self.typ, self.weak_ast, show_name, self.fun_args, arrstr)
-        definition = re.sub(' +',' ',definition).strip()
-        return definition
+        return ret
 
 
     def parse(self, item):
@@ -129,23 +137,48 @@ class StructField(object):
             break
 
 
-
-
-
-        # get strong and weak pointers
-        m = re.match(r'([\s*]*)\(([*\s]+)([A-Za-z_]\w*)\s*\)', item)
+        #get weak pointer
+        m = re.match(r'[\s*]*',item)
         if m:
-            self.weak_ast = m.group(1).count('*') * '*'
-            self.strong_ast = "(" + m.group(2).count('*') * '*' + ")"
-            self.name = m.group(3)
-        else:
-            m = re.match(r'([*\s]*)([A-Za-z_]\w*)', item)
-            if not m:
-                raise_error("var name not found")
-            self.weak_ast = m.group(1).count('*') * '*'
-            self.strong_ast = ''
-            self.name = m.group(2)
+            self.weak_ast = m.group(0).count("*") * "*"
+            item = item[m.end(0):]
+
+
+        #check bracket opened
+        bracket = False
+        m = re.match(r'\s*\(',item)
+        if m:
+            bracket = True
+            item = item[m.end(0):]
+
+        #calling convention
+        m = re.match(r'\s*(__fastcall)|(stdcall)|(_cdecl)', item)
+        if m:
+            self.call_conven = m.group(0)
+            item = item[m.end(0):]
+
+        #pointer to function asterixes
+        if bracket:
+            m = re.match(r'[\s*]*',item)
+            if m:
+                self.strong_ast = m.group(0).count("*") * "*"
+                item = item[m.end(0):]
+
+        #name
+        m = re.match(r'[A-Za-z_]\w*', item)
+        if not m:
+            raise_error("var name not found")
+        self.name = m.group(0)
         item = item[m.end(0):]
+
+        #TO DO array_modifier for function pointer
+
+        #bracket closure
+        if bracket:
+            m = re.match(r'\s*\)', item)
+            if not m:
+                raise_error("Invalid declaration structure")
+            item = item[m.end(0):]
 
         # get func args
         m = re.match(r'\s*(\(.*\))', item)
@@ -267,6 +300,15 @@ class HeaderStruct(object):
     def names(self):
         return [f.name for f in self.fields]
 
+    def field(self,fieldname):
+        return next((f for f in self.fields if f.name == fieldname), None)
+
+    def rename_var(self, field_name, new_field_name):
+        if not re.match(r"[A-Za-z_]\w*",new_field_name):
+            raise_error("New field %s is not conformed to rules" % new_field_name)
+        f = self.field(field_name)
+        f.set_name(new_field_name)
+
     def split_var(self, field_name, new_var_str, arr_index = 0):
 
         """
@@ -345,7 +387,7 @@ class HFile:
     def struct_list(self):
         return [struct.name for struct in self.structs]
 
-    def replace(self, structure):
+    def update(self, structure):
         idx = self.structs.index(Where(lambda x: x.name == structure.name))
         left,right = self.struct_bounds[idx]
         self.text = self.text[:left] + str(structure) + self.text[right:]
@@ -452,3 +494,5 @@ e = """struct CLafFlash
 # h.save(r"D:\IDA\ting_test.h")
 
 
+# n= StructField("void* (__fastcall *deconstructor_SocketWrapper)(void* self)")
+# print (str(n))

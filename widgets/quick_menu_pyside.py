@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\PyIDA\widgets\quick_menu.ui'
 #
-# Created: Mon Jan  9 16:30:13 2017
+# Created: Sat Apr 15 19:11:44 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -42,6 +42,9 @@ class Ui_QuickMenu(object):
         self.create_btn.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         self.create_btn.setObjectName("create_btn")
         self.verticalLayout.addWidget(self.create_btn)
+        self.rename_btn = QtGui.QPushButton(QuickMenu)
+        self.rename_btn.setObjectName("rename_btn")
+        self.verticalLayout.addWidget(self.rename_btn)
         self.reload_headers_btn = QtGui.QPushButton(QuickMenu)
         self.reload_headers_btn.setFlat(False)
         self.reload_headers_btn.setObjectName("reload_headers_btn")
@@ -62,6 +65,7 @@ class Ui_QuickMenu(object):
         self.find_in_decompiled_btn.setText(QtGui.QApplication.translate("QuickMenu", "Find in decompiled", None, QtGui.QApplication.UnicodeUTF8))
         self.find_in_headers_btn.setText(QtGui.QApplication.translate("QuickMenu", "Find in headers", None, QtGui.QApplication.UnicodeUTF8))
         self.create_btn.setText(QtGui.QApplication.translate("QuickMenu", "Create", None, QtGui.QApplication.UnicodeUTF8))
+        self.rename_btn.setText(QtGui.QApplication.translate("QuickMenu", "Rename", None, QtGui.QApplication.UnicodeUTF8))
         self.reload_headers_btn.setText(QtGui.QApplication.translate("QuickMenu", "Reload headers", None, QtGui.QApplication.UnicodeUTF8))
         self.goto_btn.setText(QtGui.QApplication.translate("QuickMenu", "Go To Name", None, QtGui.QApplication.UnicodeUTF8))
 

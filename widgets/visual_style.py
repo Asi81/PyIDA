@@ -31,6 +31,11 @@ background-color: rgb(54, 64, 60);
 def set(widget):
     widget.setStyleSheet(style_sheet)
 
-
 def set_as_alarmed(widget):
     widget.setStyleSheet(alarmed_style_sheet)
+
+def set_alarmed_if(widget, condition):
+    if condition:
+        set_as_alarmed(widget)
+    else:
+        set(widget)

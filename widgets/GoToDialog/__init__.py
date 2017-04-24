@@ -44,7 +44,6 @@ class Dialog(Ui_GoToDialog):
 
 
 
-
 def launch(func_name):
     import goto
     dialog = Dialog()

@@ -67,7 +67,7 @@ def replace_func_names(from_str, to_str, mangled, unmangled):
         proceed = mangled if dnm else unmangled
 
         if proceed and from_str in name:
-            new_name = name.replace(from_str,to_str)
+            new_name = name.replace(from_str, to_str)
             idc.MakeNameEx(ea,new_name,0)
             print "FunctionName %s is replaced to %s" % (name,new_name)
 

@@ -192,9 +192,6 @@ class TextSearchForm_t(PluginForm):
 
         self.adjustColumnsToContents()
 
-
-
-
     def OnClose(self, form):
         # print("TextSearchForm_t::OnClose")
         pass
@@ -228,7 +225,6 @@ class SearchCtx():
 
     def refresh_search_results(self, results_table):
         self.search_text_form.refresh(results_table)
-        self.search_text_form.update()
 
     def show(self):
         self.search_text_form.show()

@@ -212,7 +212,7 @@ class Dialog(Ui_CreateVarDialog):
         filename = self.structname_to_file_table[self.new_struct.name]
         shutil.copy(filename,filename+".bak")
         hfile = hparser.HFile(filename)
-        hfile.replace(self.new_struct)
+        hfile.update(self.new_struct)
         hfile.save()
         idc.ParseTypes(filename, idc.PT_FILE | idc.PT_PAKDEF)
 
