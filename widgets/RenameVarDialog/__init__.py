@@ -8,7 +8,7 @@ import proj
 import hparser
 import copy
 import rename
-
+import gui
 
 
 class FunctionName:
@@ -185,6 +185,19 @@ class Dialog(Ui_RenameVarDialog):
                 hfile.update(struct)
                 hfile.save()
                 idc.ParseTypes(filename, idc.PT_FILE | idc.PT_PAKDEF)
+        for i,a in enumerate(self.functions):
+            item = self.occurences_lit.item(i+len(self.vars))
+            if item.checkState() == QtCore.Qt.Checked:
+                ea = a["ea"]
+                func_name = a["func_name"]
+                if func_name.demangled:
+                    if not gui.ask("Function %s is mangled. If you wish to rename it, mangling will dissapear. Continue?" %  func_name.signature()):
+                        continue
+                old_name = func_name.fullname()
+                func_name.set_base_name(self.new_name)
+                print ea, func_name.fullname(), idc.SN_NOCHECK
+                idc.MakeNameEx(ea, str(func_name.fullname()), idc.SN_NOCHECK)
+                print "FunctionName %s is replaced to %s" % (old_name, func_name.fullname())
 
 
 def launch():

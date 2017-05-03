@@ -29,7 +29,7 @@ def similar_func_list(nm):
         for ea in idautils.Functions():
             fn = m.get(ea, "sub_" + hex(ea)[2:].replace("L", ""))
             fn = idc.Demangle(fn, 0) if idc.Demangle(fn, 0) else fn
-            if re.search(r"\W" + nm + r"\W", fn):
+            if re.search(r"\W" + nm + r"\W", fn) or re.search(r"\W" + nm + "$", fn):
                 l.append((ea,fn))
     return l
 
