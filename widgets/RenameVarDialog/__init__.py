@@ -1,3 +1,6 @@
+import re
+
+from FunctionName import FunctionName
 from PySide import QtGui,QtCore
 from widgets import visual_style
 from  widgets.RenameVarDialog.RenameVarDialog_pyside import Ui_RenameVarDialog
@@ -9,47 +12,6 @@ import hparser
 import copy
 import rename
 import gui
-
-
-class FunctionName:
-    def __init__(self, func_name):
-        self.demangled = idc.Demangle(func_name,0)
-        decl = str(self.demangled if self.demangled else func_name)
-
-        full_name = decl
-        self.args = ""
-        self.const_modif = ""
-        if self.demangled and decl.rfind(")")!=-1:
-            self.args = decl[decl.index('(') : decl.rindex(')')+1]
-            full_name = decl[:decl.index('(')]
-            self.const_modif = decl[decl.rindex(')')+1:]
-
-        self.namespace = ""
-        self.basename = full_name
-        idx = full_name.rfind("::")
-        if idx != -1:
-            self.namespace  = full_name[:idx]
-            self.basename = full_name[idx+2:]
-
-
-    def signature(self):
-        ret = self.fullname()
-        if self.args:
-            ret += self.args
-            ret += self.const_modif
-        return ret
-
-    def fullname(self):
-        ret = ""
-        if self.namespace:
-            ret += self.namespace + "::"
-        ret += self.basename
-        return ret
-
-    def set_base_name(self,nm):
-        self.basename = nm
-
-
 
 
 class Dialog(Ui_RenameVarDialog):
@@ -89,9 +51,21 @@ class Dialog(Ui_RenameVarDialog):
         self.d.exec_()
         self.renew_list()
 
+    def new_name_ok(self):
+        if not self.new_name or not re.match(r'[A-Za-z_]',self.new_name[0]):
+            return False
+        for s in self.new_name:
+            if not re.match(r'[A-Za-z0-9_:]',s):
+                return False
+        return True
+
     def ok_btn_clicked(self):
-        self.rename()
-        self.d.accept()
+        if not self.new_name_ok() or not self.old_name:
+            return
+        if self.rename():
+            self.d.accept()
+        else:
+            print "No elements selected"
 
     def cancel_btn_clicked(self):
         self.d.accept()
@@ -104,6 +78,8 @@ class Dialog(Ui_RenameVarDialog):
 
     def newname_changed(self):
         self.new_name = self.new_name_edit.text()
+        if not self.new_name_ok():
+            self.new_name = ''
         self.renew_list()
 
     def renew_filter(self):
@@ -174,6 +150,9 @@ class Dialog(Ui_RenameVarDialog):
                     item.setForeground(QtCore.Qt.red)
 
     def rename(self):
+        if not self.new_name_ok() or not self.old_name:
+            return False
+        found = False
         for i,a in enumerate(self.vars):
             item = self.occurences_lit.item(i)
             if item.checkState() == QtCore.Qt.Checked:
@@ -185,6 +164,7 @@ class Dialog(Ui_RenameVarDialog):
                 hfile.update(struct)
                 hfile.save()
                 idc.ParseTypes(filename, idc.PT_FILE | idc.PT_PAKDEF)
+                found = True
         for i,a in enumerate(self.functions):
             item = self.occurences_lit.item(i+len(self.vars))
             if item.checkState() == QtCore.Qt.Checked:
@@ -198,6 +178,8 @@ class Dialog(Ui_RenameVarDialog):
                 print ea, func_name.fullname(), idc.SN_NOCHECK
                 idc.MakeNameEx(ea, str(func_name.fullname()), idc.SN_NOCHECK)
                 print "FunctionName %s is replaced to %s" % (old_name, func_name.fullname())
+                found = True
+        return found
 
 
 def launch():

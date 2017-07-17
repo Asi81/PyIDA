@@ -6,6 +6,7 @@ import widgets.GoToDialog
 import widgets.FindVirtualCallDialog
 import widgets.CreateVTableDialog
 import widgets.TracebackDialog
+import widgets.RenameClassDialog
 from widgets.quick_menu_pyside import  Ui_QuickMenu
 import idaapi
 from widgets import visual_style
@@ -26,7 +27,8 @@ class QuickMenu(Ui_QuickMenu):
     GOTO_CLICKED = 5
     FIND_VCALL_CLICKED = 6
     FIND_IN_HEADERS_CLICKED = 7
-    RENAME_CLICKED = 8
+    RENAME_VAR_CLICKED = 8
+    RENAME_CLASS_CLICKED = 9
 
     def __init__(self):
 
@@ -48,6 +50,15 @@ class QuickMenu(Ui_QuickMenu):
         self.find_virtual_call_action.triggered.connect(self.findvcall_btn_clicked)
         self.find_in_decompiled_btn.setMenu(self.find_in_decompiled_menu)
 
+        self.rename_menu = QtGui.QMenu("", self.d)
+        self.rename_class_action = self.rename_menu.addAction("Class")
+        self.rename_class_action.triggered.connect(self.rename_class_clicked)
+
+        self.rename_var_action = self.rename_menu.addAction("Variable")
+        self.rename_var_action.triggered.connect(self.rename_btn_clicked)
+        self.rename_btn.setMenu(self.rename_menu)
+
+
         self.create_menu = QtGui.QMenu("",self.d)
         self.create_class_action =  self.create_menu.addAction("Class")
         self.create_var_action = self.create_menu.addAction("Variable")
@@ -55,7 +66,6 @@ class QuickMenu(Ui_QuickMenu):
         self.create_class_action.triggered.connect(self.create_class_btn_clicked)
         self.create_var_action.triggered.connect(self.create_var_btn_clicked)
         self.create_vtable_action.triggered.connect(self.create_vtable_btn_clicked)
-        self.rename_btn.clicked.connect(self.rename_btn_clicked)
 
         self.create_btn.setMenu(self.create_menu)
 
@@ -104,10 +114,11 @@ class QuickMenu(Ui_QuickMenu):
 
     def rename_btn_clicked(self):
         self.d.accept()
-        self.button_clicked = QuickMenu.RENAME_CLICKED
+        self.button_clicked = QuickMenu.RENAME_VAR_CLICKED
 
-
-
+    def rename_class_clicked(self):
+        self.d.accept()
+        self.button_clicked = QuickMenu.RENAME_CLASS_CLICKED
 
     def text(self):
         return self.selected_text
@@ -135,10 +146,10 @@ def launch():
             widgets.FindVirtualCallDialog.launch()
         elif btn_clicked == QuickMenu.FIND_IN_HEADERS_CLICKED:
             widgets.FindTextDialog.launch_headers_search()
-        elif btn_clicked == QuickMenu.RENAME_CLICKED:
+        elif btn_clicked == QuickMenu.RENAME_VAR_CLICKED:
             widgets.RenameVarDialog.launch()
-
-
+        elif btn_clicked == QuickMenu.RENAME_CLASS_CLICKED:
+            widgets.RenameClassDialog.launch()
 
     except:
         traceback.print_exc()

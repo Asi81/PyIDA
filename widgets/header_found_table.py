@@ -5,6 +5,7 @@ import idaapi
 import os
 
 from proj import headers_folder
+import subprocess
 
 PLUGIN_NAME = "Headers search results"
 
@@ -140,9 +141,6 @@ class TableView_t(QtGui.QTableView):
         index_data = index.data(QtCore.Qt.UserRole)
         return index_data
 
-
-
-
     def mouseDoubleClickEvent(self, event):
         event.accept()
         row  = self.rowAt(event.pos().y())
@@ -150,7 +148,7 @@ class TableView_t(QtGui.QTableView):
 
         filename = m.raw_data(row,"filename")
         line = m.raw_data(row, "line")
-        os.system("\"C:\\Program Files (x86)\\Notepad++\\notepad++.exe\" -n%s %s" %  (line+1, filename))
+        subprocess.Popen(["C:\\Program Files (x86)\\Notepad++\\notepad++.exe", "-n%s" % (line+1),filename])
 
 
     def contextMenuEvent(self,event):
