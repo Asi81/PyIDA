@@ -2,7 +2,7 @@ import idautils
 import idaapi
 import idc
 import json
-
+import syntax
 
 def func_declaration(ea):
     '''returns the C function declaration at given address'''
@@ -35,15 +35,27 @@ def export_func_names(fname):
             print("Failed to retrieve string index")
         else:
             xrefs = [x.frm for x in idautils.XrefsTo(v.ea)]
-            if len(xrefs) != 1:
+
+            ret = [idaapi.get_func(x) for x in xrefs if idaapi.get_func(x)]
+
+            names = []
+            funcs = []
+            for func in ret:
+                if idc.GetFunctionName(func.startEA) not in names:
+                    names.append(idc.GetFunctionName(func.startEA))
+                    funcs.append(func)
+
+            if (len(funcs)!=1):
                 continue
+            func = funcs[0]
+
+            if idc.GetFunctionName(func.startEA).startswith("sub_"):
+                continue
+
             print("%x: len=%d type=%d -> '%s'" % (v.ea, v.length, v.type, unicode(v)))
             d = {}
             d['string'] = unicode(v)
             d['str_type'] = v.type
-            func = idaapi.get_func(xrefs[0])
-            if func is None:
-                continue
             d['func_name'] = idc.GetFunctionName(func.startEA)
             d['func_demangled'] = demangle(d['func_name'])
             d['func_c_decl'] = idc.GetType(func.startEA)
@@ -55,16 +67,34 @@ def export_func_names(fname):
     f.close()
 
 
-
-
 def import_func_names(fname):
     s = idautils.Strings(False)
     s.setup(strtypes=idautils.Strings.STR_UNICODE | idautils.Strings.STR_C)
-    jsontable = []
+    f = open(fname)
+    jsontable = json.load(f)
+    f.close()
 
-    #idc.MakeNameEx(ea,name,2)
+    string2ea = dict([(unicode(v),v.ea) for v in s])
 
-    pass
+    for entry in jsontable:
+        if unicode(entry['string']) in string2ea.keys():
+
+            ea = string2ea[unicode(entry['string'])]
+            xrefs = [x.frm for x in idautils.XrefsTo(ea)]
+            ret = [idaapi.get_func(x) for x in xrefs if idaapi.get_func(x)]
+
+            names = []
+            funcs = []
+            for func in ret:
+                if idc.GetFunctionName(func.startEA) not in names:
+                    names.append(idc.GetFunctionName(func.startEA))
+                    funcs.append(func)
+
+            if len(funcs) == 1:
+                print "%s %s -> %s\tstr: %s" % ( hex(funcs[0].startEA), idc.GetFunctionName(funcs[0].startEA),
+                                                 entry['func_name'],entry['string'] )
+
+            # idc.MakeNameEx(ea,name,2)
 
 
 

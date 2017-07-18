@@ -66,10 +66,7 @@ class Dialog(Ui_SaveBinaryDumpDialog):
 
 
     def save_file_clicked(self):
-        if not os.path.exists(proj.dumps_folder):
-            if gui.ask("Folder %s doest exist. Create?" % proj.dumps_folder):
-                os.makedirs(proj.dumps_folder)
-
+        gui.check_folder(proj.dumps_folder)
         fname, ok = QFileDialog.getSaveFileName(self.d , caption="Select file to save",
                                                 dir = proj.dumps_folder , filter="Binary file(*.bin)")
         if ok:

@@ -13,14 +13,27 @@ import binary_finder
 import decompiled
 import wpsearch
 import widgets.BinaryDumpDialog
+import proj
+import gui
+from  PySide.QtGui import QFileDialog
 
 def launch_quick_menu():
     widgets.quick_menu.launch()
 
 
 def export_func_names():
-    path = os.path.join(os.getcwd(), 'func_strings.json')
-    string_refs.export_func_names(path)
+    if gui.check_folder(proj.exports_folder):
+        path = os.path.join(proj.exports_folder, 'func_strings.json')
+        string_refs.export_func_names(path)
+        print "Function strings exported to %s" % path
+    else:
+        print "Strings export cancelled"
+
+def import_func_names():
+    fname, _ = QFileDialog.getOpenFileName(None, "Select json file","",
+                                           "Json file (*.json)")
+    if fname:
+        string_refs.import_func_names(fname)
 
 
 def add_hotkey(hotkey, func):
@@ -54,6 +67,7 @@ add_menu_item("Edit/PyIDA/", "Make all strings const",None,0, decompiled.make_st
 add_menu_item("Edit/PyIDA/", "Replace Names",None,0, widgets.ReplaceDialog.launch ,None)
 add_menu_item("Edit/PyIDA/", "Save binary dump",None,0, widgets.BinaryDumpDialog.launch ,None)
 add_menu_item("File/Produce file/PyIDA/", "Create strings-to-function",None,0,export_func_names,None)
+add_menu_item("File/Load file/PyIDA/", "Import strings-to-function",None,0,import_func_names,None)
 add_menu_item("View/PyIDA/","Exception traceback",'Alt-Shift-M',0, widgets.TracebackDialog.launch,None)
 add_menu_item("View/PyIDA/","Decompiled search",None,0, widgets.find_text_table.show,None)
 add_menu_item("View/PyIDA/","Text search",None,0, widgets.header_found_table.show,None)
