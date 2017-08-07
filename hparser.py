@@ -235,12 +235,17 @@ class HeaderStruct(object):
         self.name = ''
         self.align = align
         self.comments = {}
+        self.funcs = [] # for now - it is a list of strings
 
 
     def __str__(self):
 
-        ret = """struct %s\n{\n%s;\n};"""
+        ret = """struct %s\n{\n%s;\n"""
         ret %=  (self.name, ";\n".join("\t" + str(f) for f in self.fields))
+
+        if self.funcs:
+            ret += "\n\n" + ";\n".join("\t" + func for func in self.funcs) + ";\n"
+        ret += "};"
         ret = self.fill_comments(ret)
         return ret
 
@@ -372,6 +377,9 @@ class HeaderStruct(object):
 
     def __len__(self):
         return len(self.fields)
+
+    def append_func_decl(self, func_decl):
+        self.funcs.append(func_decl)
 
 
 
