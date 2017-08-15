@@ -16,6 +16,8 @@ import widgets.BinaryDumpDialog
 import proj
 import gui
 from  PySide.QtGui import QFileDialog
+from sources_export import export_project
+
 
 def launch_quick_menu():
     widgets.quick_menu.launch()
@@ -71,7 +73,7 @@ add_menu_item("File/Load file/PyIDA/", "Import strings-to-function",None,0,impor
 add_menu_item("View/PyIDA/","Exception traceback",'Alt-Shift-M',0, widgets.TracebackDialog.launch,None)
 add_menu_item("View/PyIDA/","Decompiled search",None,0, widgets.find_text_table.show,None)
 add_menu_item("View/PyIDA/","Text search",None,0, widgets.header_found_table.show,None)
-
+add_menu_item("File/PyIDA/", "Export to C++ sources",None,0,export_project,None)
 
 
 globals_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),"global_constants.h")

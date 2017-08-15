@@ -72,6 +72,7 @@ class RemoveNamespaces:
         self.scan_functions()
         self.classname = classname
         self.class_def = get_class_def(classname)
+        self.stack_def = hparser.HeaderStruct(1)
 
 
     def scan_functions(self):
@@ -101,9 +102,48 @@ class RemoveNamespaces:
 
         self.logger.info("%d subcalls found" % len(self.funcs))
 
+    def scan_stack(self,func_text):
+
+        try:
+            self.logger.info("scanning args")
+            l = func_text.split("\n")
+            i = 0
+            while l[i].startswith('//'):
+                i += 1
+            line = l[i]
+            line = line.split("(")[-1].split(")",1)[0]
+            self.logger.info("args: %s" % line)
+            items = line.split(",")
+            for item in items:
+                if item == " ...":
+                    continue
+                self.stack_def.append_field(item)
+            self.logger.info("args:\n %s" % str(self.stack_def))
+        except:
+            pass
+
+
+        try:
+            self.logger.info("scanning stack")
+            l = func_text.split("\n")
+            l = l[l.index("{")+1: l.index("")]
+
+            for line in l:
+                if "; //" not in line:
+                    break
+                self.logger.info("found %s" % line )
+                t = line.split(";",1)[0]
+                self.stack_def.append_field(t)
+            self.logger.info("stack struct:\n %s" % str(self.stack_def))
+        except:
+            pass
+
+
+
 
     def __call__(self, func_text):
         self.logger.info("scanning %s" % idc.GetFunctionName(self.ea))
+        self.scan_stack(func_text)
         lines = func_text.split("\n")
         for func in self.funcs:
             self.logger.info("checking %s" % func.fullname())
@@ -125,6 +165,10 @@ class RemoveNamespaces:
                     typ = None
                     if obj in self.class_def.names():
                         f = self.class_def.field(obj)
+                        typ = f.typ
+
+                    if obj in self.stack_def.names():
+                        f = self.stack_def.field(obj)
                         typ = f.typ
 
                     if obj == "this":
@@ -249,9 +293,12 @@ class ClassExport:
 
     def remove_deconstructor(self,func_text):
         l = func_text.split("\n")
-        line = l[0]
-        if l[0] == "void %s::deconstructor()" % self.class_name:
-            l[0] = "void %s::~%s()" % (self.class_name,self.class_name)
+        i = 0
+        while l[i].startswith('//'):
+            i+=1
+        line = l[i]
+        if l[i] == "void %s::deconstructor()" % self.class_name:
+            l[i] = "%s::~%s()" % (self.class_name,self.class_name)
             return "\n".join(l)
         return func_text
 

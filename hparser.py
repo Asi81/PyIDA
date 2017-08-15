@@ -286,6 +286,12 @@ class HeaderStruct(object):
             self.fields.append(f)
             # print f.type_string(), "\titem = ", item.replace("\n", "")
 
+
+    def append_field(self, field_text):
+        f = StructField()
+        f.parse(field_text)
+        self.fields.append(f)
+
     def field_offset(self, index):
         """
 

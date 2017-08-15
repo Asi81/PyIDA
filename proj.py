@@ -9,6 +9,7 @@ headers_folder = os.path.join(os.getcwd(),'headers')
 dumps_folder = os.path.join(os.getcwd(),'dumps')
 exports_folder = os.path.join(os.getcwd(),'exports')
 logs_folder = os.path.join(os.getcwd(),'logs')
+config_folder = os.path.join(os.getcwd(),'.pyida')
 
 pointer_size = 8 if idaapi.get_inf_structure().is_64bit() else 4
 processor_typ = idaapi.get_inf_structure().procName
