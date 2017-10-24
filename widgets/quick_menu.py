@@ -1,4 +1,4 @@
-from PySide import QtGui,QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 import widgets.FindTextDialog
 import widgets.CreateClassDialog
 import widgets.CreateVarDialog
@@ -7,13 +7,13 @@ import widgets.FindVirtualCallDialog
 import widgets.CreateVTableDialog
 import widgets.TracebackDialog
 import widgets.RenameClassDialog
-from widgets.quick_menu_pyside import  Ui_QuickMenu
+from widgets.quick_menu_pyqt5 import  Ui_QuickMenu
 import idaapi
 from widgets import visual_style
 import decompiled
 import sys
 import traceback
-import RenameVarDialog
+import widgets.RenameVarDialog
 
 
 
@@ -33,24 +33,27 @@ class QuickMenu(Ui_QuickMenu):
     def __init__(self):
 
         super(QuickMenu,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
         self.button_clicked = None
 
         self.setupUi(self.d)
-        self.selected_text = idaapi.get_highlighted_identifier()
+
+        h = idaapi.get_highlight(idaapi.get_current_viewer())
+        self.selected_text = h[0] if h else ""
+
         self.reload_headers_btn.clicked.connect(self.reload_headers_btn_clicked)
         self.goto_btn.clicked.connect(self.goto_btn_clicked)
 
         self.find_in_headers_btn.clicked.connect(self.find_in_headers_btn_clicked)
 
-        self.find_in_decompiled_menu = QtGui.QMenu("",self.d)
+        self.find_in_decompiled_menu = QtWidgets.QMenu("",self.d)
         self.find_text_action =  self.find_in_decompiled_menu.addAction("Text/Var")
         self.find_virtual_call_action = self.find_in_decompiled_menu.addAction("Virtual Call")
         self.find_text_action.triggered.connect(self.find_text_btn_clicked)
         self.find_virtual_call_action.triggered.connect(self.findvcall_btn_clicked)
         self.find_in_decompiled_btn.setMenu(self.find_in_decompiled_menu)
 
-        self.rename_menu = QtGui.QMenu("", self.d)
+        self.rename_menu = QtWidgets.QMenu("", self.d)
         self.rename_class_action = self.rename_menu.addAction("Class")
         self.rename_class_action.triggered.connect(self.rename_class_clicked)
 
@@ -59,7 +62,7 @@ class QuickMenu(Ui_QuickMenu):
         self.rename_btn.setMenu(self.rename_menu)
 
 
-        self.create_menu = QtGui.QMenu("",self.d)
+        self.create_menu = QtWidgets.QMenu("",self.d)
         self.create_class_action =  self.create_menu.addAction("Class")
         self.create_var_action = self.create_menu.addAction("Variable")
         self.create_vtable_action = self.create_menu.addAction("VTable struct")

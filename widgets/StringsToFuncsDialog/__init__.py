@@ -1,6 +1,6 @@
-from PySide import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import visual_style
-from  widgets.StringsToFuncsDialog.strings_to_func_dialog_pyside import Ui_StringToFuncDialog
+from  widgets.StringsToFuncsDialog.strings_to_func_dialog_pyqt5 import Ui_StringToFuncDialog
 import rename
 
 
@@ -9,7 +9,7 @@ class Dialog(Ui_StringToFuncDialog):
     def __init__(self):
 
         super(Ui_StringToFuncDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
         self.setupUi(self.d)
         self.rename_btn.clicked.connect(self.rename_btn_clicked)
 

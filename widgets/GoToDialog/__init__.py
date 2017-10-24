@@ -1,6 +1,6 @@
-from PySide import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import visual_style
-from  widgets.GoToDialog.go_to_dialog_pyside import Ui_GoToDialog
+from  widgets.GoToDialog.go_to_dialog_pyqt5 import Ui_GoToDialog
 import idc
 import rename
 
@@ -10,7 +10,7 @@ class Dialog(Ui_GoToDialog):
     def __init__(self):
 
         super(Ui_GoToDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
 
         self.setupUi(self.d)
         self.goto_btn.clicked.connect(self.goto_btn_clicked)

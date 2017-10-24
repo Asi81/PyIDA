@@ -1,6 +1,6 @@
-from PySide import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import visual_style
-from  widgets.ReplaceDialog.replace_dialog_pyside import Ui_ReplaceDialog
+from  widgets.ReplaceDialog.replace_dialog_pyqt5 import Ui_ReplaceDialog
 import idc
 import idautils
 
@@ -11,7 +11,7 @@ class Dialog(Ui_ReplaceDialog):
     def __init__(self):
 
         super(Ui_ReplaceDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
 
         self.do_mangled_fnnames = False
         self.do_unmangled_fnnames = False

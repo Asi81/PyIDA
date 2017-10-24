@@ -11,7 +11,24 @@
 """
 idautils.py - High level utility functions for IDA
 """
-import idaapi
+import ida_bytes
+import ida_dbg
+import ida_entry
+import ida_funcs
+import ida_ida
+import ida_idaapi
+import ida_idd
+import ida_idp
+import ida_kernwin
+import ida_loader
+import ida_nalt
+import ida_name
+import ida_netnode
+import ida_segment
+import ida_strlist
+import ida_ua
+import ida_xref
+
 import idc
 import types
 import os
@@ -22,7 +39,7 @@ def refs(ea, funcfirst, funcnext):
     Generic reference collector - INTERNAL USE ONLY.
     """
     ref = funcfirst(ea)
-    while ref != idaapi.BADADDR:
+    while ref != ida_idaapi.BADADDR:
         yield ref
         ref = funcnext(ea, ref)
 
@@ -39,13 +56,13 @@ def CodeRefsTo(ea, flow):
 
     Example::
 
-        for ref in CodeRefsTo(ScreenEA(), 1):
+        for ref in CodeRefsTo(get_screen_ea(), 1):
             print ref
     """
     if flow == 1:
-        return refs(ea, idaapi.get_first_cref_to, idaapi.get_next_cref_to)
+        return refs(ea, ida_xref.get_first_cref_to, ida_xref.get_next_cref_to)
     else:
-        return refs(ea, idaapi.get_first_fcref_to, idaapi.get_next_fcref_to)
+        return refs(ea, ida_xref.get_first_fcref_to, ida_xref.get_next_fcref_to)
 
 
 def CodeRefsFrom(ea, flow):
@@ -60,13 +77,13 @@ def CodeRefsFrom(ea, flow):
 
     Example::
 
-        for ref in CodeRefsFrom(ScreenEA(), 1):
+        for ref in CodeRefsFrom(get_screen_ea(), 1):
             print ref
     """
     if flow == 1:
-        return refs(ea, idaapi.get_first_cref_from, idaapi.get_next_cref_from)
+        return refs(ea, ida_xref.get_first_cref_from, ida_xref.get_next_cref_from)
     else:
-        return refs(ea, idaapi.get_first_fcref_from, idaapi.get_next_fcref_from)
+        return refs(ea, ida_xref.get_first_fcref_from, ida_xref.get_next_fcref_from)
 
 
 def DataRefsTo(ea):
@@ -79,10 +96,10 @@ def DataRefsTo(ea):
 
     Example::
 
-        for ref in DataRefsTo(ScreenEA()):
+        for ref in DataRefsTo(get_screen_ea()):
             print ref
     """
-    return refs(ea, idaapi.get_first_dref_to, idaapi.get_next_dref_to)
+    return refs(ea, ida_xref.get_first_dref_to, ida_xref.get_next_dref_to)
 
 
 def DataRefsFrom(ea):
@@ -95,10 +112,10 @@ def DataRefsFrom(ea):
 
     Example::
 
-        for ref in DataRefsFrom(ScreenEA()):
+        for ref in DataRefsFrom(get_screen_ea()):
             print ref
     """
-    return refs(ea, idaapi.get_first_dref_from, idaapi.get_next_dref_from)
+    return refs(ea, ida_xref.get_first_dref_from, ida_xref.get_next_dref_from)
 
 
 def XrefTypeName(typecode):
@@ -141,14 +158,14 @@ def XrefsFrom(ea, flags=0):
     Return all references from address 'ea'
 
     @param ea: Reference address
-    @param flags: any of idaapi.XREF_* flags
+    @param flags: any of ida_xref.XREF_* flags
 
     Example::
            for xref in XrefsFrom(here(), 0):
                print xref.type, XrefTypeName(xref.type), \
                          'from', hex(xref.frm), 'to', hex(xref.to)
     """
-    xref = idaapi.xrefblk_t()
+    xref = ida_xref.xrefblk_t()
     if xref.first_from(ea, flags):
         yield _copy_xref(xref)
         while xref.next_from():
@@ -160,14 +177,14 @@ def XrefsTo(ea, flags=0):
     Return all references to address 'ea'
 
     @param ea: Reference address
-    @param flags: any of idaapi.XREF_* flags
+    @param flags: any of ida_xref.XREF_* flags
 
     Example::
            for xref in XrefsTo(here(), 0):
                print xref.type, XrefTypeName(xref.type), \
                          'from', hex(xref.frm), 'to', hex(xref.to)
     """
-    xref = idaapi.xrefblk_t()
+    xref = ida_xref.xrefblk_t()
     if xref.first_to(ea, flags):
         yield _copy_xref(xref)
         while xref.next_to():
@@ -176,36 +193,36 @@ def XrefsTo(ea, flags=0):
 
 def Threads():
     """Returns all thread IDs"""
-    for i in xrange(0, idc.GetThreadQty()):
-        yield idc.GetThreadId(i)
+    for i in xrange(0, idc.get_thread_qty()):
+        yield idc.getn_thread(i)
 
 
 def Heads(start=None, end=None):
     """
     Get a list of heads (instructions or data)
 
-    @param start: start address (default: inf.minEA)
-    @param end:   end address (default: inf.maxEA)
+    @param start: start address (default: inf.min_ea)
+    @param end:   end address (default: inf.max_ea)
 
     @return: list of heads between start and end
     """
-    if not start: start = idaapi.cvar.inf.minEA
-    if not end:   end = idaapi.cvar.inf.maxEA
+    if not start: start = ida_ida.cvar.inf.min_ea
+    if not end:   end = ida_ida.cvar.inf.max_ea
 
     ea = start
-    if not idc.isHead(idc.GetFlags(ea)):
-        ea = idaapi.next_head(ea, end)
-    while ea != idaapi.BADADDR:
+    if not idc.is_head(ida_bytes.get_flags(ea)):
+        ea = ida_bytes.next_head(ea, end)
+    while ea != ida_idaapi.BADADDR:
         yield ea
-        ea = idaapi.next_head(ea, end)
+        ea = ida_bytes.next_head(ea, end)
 
 
 def Functions(start=None, end=None):
     """
     Get a list of functions
 
-    @param start: start address (default: inf.minEA)
-    @param end:   end address (default: inf.maxEA)
+    @param start: start address (default: inf.min_ea)
+    @param end:   end address (default: inf.max_ea)
 
     @return: list of heads between start and end
 
@@ -214,21 +231,21 @@ def Functions(start=None, end=None):
     in multiple segments will be reported multiple times, once in each segment
     as they are listed.
     """
-    if not start: start = idaapi.cvar.inf.minEA
-    if not end:   end = idaapi.cvar.inf.maxEA
+    if not start: start = ida_ida.cvar.inf.min_ea
+    if not end:   end = ida_ida.cvar.inf.max_ea
 
     # find first function head chunk in the range
-    chunk = idaapi.get_fchunk(start)
+    chunk = ida_funcs.get_fchunk(start)
     if not chunk:
-        chunk = idaapi.get_next_fchunk(start)
-    while chunk and chunk.startEA < end and (chunk.flags & idaapi.FUNC_TAIL) != 0:
-        chunk = idaapi.get_next_fchunk(chunk.startEA)
+        chunk = ida_funcs.get_next_fchunk(start)
+    while chunk and chunk.start_ea < end and (chunk.flags & ida_funcs.FUNC_TAIL) != 0:
+        chunk = ida_funcs.get_next_fchunk(chunk.start_ea)
     func = chunk
 
-    while func and func.startEA < end:
-        startea = func.startEA
+    while func and func.start_ea < end:
+        startea = func.start_ea
         yield startea
-        func = idaapi.get_next_func(startea)
+        func = ida_funcs.get_next_func(startea)
 
 
 def Chunks(start):
@@ -240,23 +257,23 @@ def Chunks(start):
     @return: list of funcion chunks (tuples of the form (start_ea, end_ea))
              belonging to the function
     """
-    func_iter = idaapi.func_tail_iterator_t( idaapi.get_func( start ) )
+    func_iter = ida_funcs.func_tail_iterator_t( ida_funcs.get_func( start ) )
     status = func_iter.main()
     while status:
         chunk = func_iter.chunk()
-        yield (chunk.startEA, chunk.endEA)
+        yield (chunk.start_ea, chunk.end_ea)
         status = func_iter.next()
 
 
 def Modules():
     """
-    Returns a list of module objects with name,size,mybase and the rebase_to attributes
+    Returns a list of module objects with name,size,base and the rebase_to attributes
     """
-    mod = idaapi.module_info_t()
-    result = idaapi.get_first_module(mod)
+    mod = ida_idd.module_info_t()
+    result = ida_dbg.get_first_module(mod)
     while result:
-        yield idaapi.object_t(name=mod.name, size=mod.size, base=mod.base, rebase_to=mod.rebase_to)
-        result = idaapi.get_next_module(mod)
+        yield ida_idaapi.object_t(name=mod.name, size=mod.size, base=mod.base, rebase_to=mod.rebase_to)
+        result = ida_dbg.get_next_module(mod)
 
 
 def Names():
@@ -265,9 +282,9 @@ def Names():
 
     @return: List of tuples (ea, name)
     """
-    for i in xrange(idaapi.get_nlist_size()):
-        ea   = idaapi.get_nlist_ea(i)
-        name = idaapi.get_nlist_name(i)
+    for i in xrange(ida_name.get_nlist_size()):
+        ea   = ida_name.get_nlist_ea(i)
+        name = ida_name.get_nlist_name(i)
         yield (ea, name)
 
 
@@ -277,10 +294,10 @@ def Segments():
 
     @return: List of segment start addresses.
     """
-    for n in xrange(idaapi.get_segm_qty()):
-        seg = idaapi.getnseg(n)
+    for n in xrange(ida_segment.get_segm_qty()):
+        seg = ida_segment.getnseg(n)
         if seg:
-            yield seg.startEA
+            yield seg.start_ea
 
 
 def Entries():
@@ -289,11 +306,11 @@ def Entries():
 
     @return: List of tuples (index, ordinal, ea, name)
     """
-    n = idaapi.get_entry_qty()
+    n = ida_entry.get_entry_qty()
     for i in xrange(0, n):
-        ordinal = idaapi.get_entry_ordinal(i)
-        ea      = idaapi.get_entry(ordinal)
-        name    = idaapi.get_entry_name(ordinal)
+        ordinal = ida_entry.get_entry_ordinal(i)
+        ea      = ida_entry.get_entry(ordinal)
+        name    = ida_entry.get_entry_name(ordinal)
         yield (i, ordinal, ea, name)
 
 
@@ -305,10 +322,10 @@ def FuncItems(start):
 
     @return: ea of each item in the function
     """
-    func = idaapi.get_func(start)
+    func = ida_funcs.get_func(start)
     if not func:
         return
-    fii = idaapi.func_item_iterator_t()
+    fii = ida_funcs.func_item_iterator_t()
     ok = fii.set(func)
     while ok:
         yield fii.current()
@@ -321,11 +338,11 @@ def Structs():
 
     @return: List of tuples (idx, sid, name)
     """
-    idx  = idc.GetFirstStrucIdx()
-    while idx != idaapi.BADADDR:
-        sid = idc.GetStrucId(idx)
-        yield (idx, sid, idc.GetStrucName(sid))
-        idx = idc.GetNextStrucIdx(idx)
+    idx  = idc.get_first_struc_idx()
+    while idx != ida_idaapi.BADADDR:
+        sid = idc.get_struc_by_idx(idx)
+        yield (idx, sid, idc.get_struc_name(sid))
+        idx = idc.get_next_struc_idx(idx)
 
 
 def StructMembers(sid):
@@ -341,14 +358,14 @@ def StructMembers(sid):
     @note: This will not return 'holes' in structures/stack frames;
            it only returns defined structure members.
     """
-    m = idc.GetFirstMember(sid)
+    m = idc.get_first_member(sid)
     if m == -1:
         raise Exception("No structure with ID: 0x%x" % sid)
-    while (m != idaapi.BADADDR):
-        name = idc.GetMemberName(sid, m)
+    while (m != ida_idaapi.BADADDR):
+        name = idc.get_member_name(sid, m)
         if name:
-            yield (m, name, idc.GetMemberSize(sid, m))
-        m = idc.GetStrucNextOff(sid, m)
+            yield (m, name, idc.get_member_size(sid, m))
+        m = idc.get_next_offset(sid, m)
 
 
 def DecodePrecedingInstruction(ea):
@@ -359,12 +376,9 @@ def DecodePrecedingInstruction(ea):
     @return: (None or the decode instruction, farref)
              farref will contain 'true' if followed an xref, false otherwise
     """
-    prev_addr, farref  = idaapi.decode_preceding_insn(ea)
-    if prev_addr == idaapi.BADADDR:
-        return (None, False)
-    else:
-        return (idaapi.cmd.copy(), farref)
-
+    insn = ida_ua.insn_t()
+    prev_addr, farref  = ida_ua.decode_preceding_insn(insn, ea)
+    return (insn, farref) if prev_addr != ida_idaapi.BADADDR else (None, False)
 
 
 def DecodePreviousInstruction(ea):
@@ -374,11 +388,9 @@ def DecodePreviousInstruction(ea):
     @param ea: address to decode
     @return: None or a new insn_t instance
     """
-    prev_addr = idaapi.decode_prev_insn(ea)
-    if prev_addr == idaapi.BADADDR:
-        return None
-
-    return idaapi.cmd.copy()
+    insn = ida_ua.insn_t()
+    prev_addr = ida_ua.decode_prev_insn(insn, ea)
+    return insn if prev_addr != ida_idaapi.BADADDR else None
 
 
 def DecodeInstruction(ea):
@@ -388,11 +400,9 @@ def DecodeInstruction(ea):
     @param ea: address to decode
     @return: None or a new insn_t instance
     """
-    inslen = idaapi.decode_insn(ea)
-    if inslen == 0:
-        return None
-
-    return idaapi.cmd.copy()
+    insn = ida_ua.insn_t()
+    inslen = ida_ua.decode_insn(insn, ea)
+    return insn if inslen > 0 else None
 
 
 def GetDataList(ea, count, itemsize=1):
@@ -400,13 +410,13 @@ def GetDataList(ea, count, itemsize=1):
     Get data list - INTERNAL USE ONLY
     """
     if itemsize == 1:
-        getdata = idaapi.get_byte
+        getdata = ida_bytes.get_byte
     elif itemsize == 2:
-        getdata = idaapi.get_word
+        getdata = ida_bytes.get_word
     elif itemsize == 4:
-        getdata = idaapi.get_long
+        getdata = ida_bytes.get_dword
     elif itemsize == 8:
-        getdata = idaapi.get_qword
+        getdata = ida_bytes.get_qword
     else:
         raise ValueError, "Invalid data size! Must be 1, 2, 4 or 8"
 
@@ -424,11 +434,11 @@ def PutDataList(ea, datalist, itemsize=1):
     putdata = None
 
     if itemsize == 1:
-        putdata = idaapi.patch_byte
+        putdata = ida_bytes.patch_byte
     if itemsize == 2:
-        putdata = idaapi.patch_word
+        putdata = ida_bytes.patch_word
     if itemsize == 4:
-        putdata = idaapi.patch_long
+        putdata = ida_bytes.patch_dword
 
     assert putdata, "Invalid data size! Must be 1, 2 or 4"
 
@@ -457,19 +467,21 @@ def GetInputFileMD5():
 
     @return: MD5 string or None on error
     """
-    return idc.GetInputMD5()
+    return idc.retrieve_input_file_md5()
 
 
 class Strings(object):
     """
-    Allows iterating over the string list. The set of strings will not be modified.
-    , unless asked explicitly at setup()-time..
+    Allows iterating over the string list. The set of strings will not be
+    modified, unless asked explicitly at setup()-time. This string list also
+    is used by the "String window" so it may be changed when this window is
+    updated.
 
     Example:
         s = Strings()
 
         for i in s:
-            print "%x: len=%d type=%d -> '%s'" % (i.ea, i.length, i.type, str(i))
+            print "%x: len=%d type=%d -> '%s'" % (i.ea, i.length, i.strtype, str(i))
 
     """
     class StringItem(object):
@@ -477,34 +489,19 @@ class Strings(object):
         Class representing each string item.
         """
         def __init__(self, si):
-            self.ea     = si.ea
+            self.ea = si.ea
             """String ea"""
-            self.type   = si.type
-            """string type (ASCSTR_xxxxx)"""
+            self.strtype = si.type
+            """string type (STRTYPE_xxxxx)"""
             self.length = si.length
             """string length"""
 
         def is_1_byte_encoding(self):
-            return not self.is_2_bytes_encoding() and not self.is_4_bytes_encoding()
-
-        def is_2_bytes_encoding(self):
-            return (self.type & 7) in [idaapi.ASCSTR_UTF16, idaapi.ASCSTR_ULEN2, idaapi.ASCSTR_ULEN4]
-
-        def is_4_bytes_encoding(self):
-            return (self.type & 7) == idaapi.ASCSTR_UTF32
+            return ida_nalt.get_strtype_bpu(self.strtype) == 1
 
         def _toseq(self, as_unicode):
-            if self.is_2_bytes_encoding():
-                conv = idaapi.ACFOPT_UTF16
-                pyenc = "utf-16"
-            elif self.is_4_bytes_encoding():
-                conv = idaapi.ACFOPT_UTF8
-                pyenc = "utf-8"
-            else:
-                conv = idaapi.ACFOPT_ASCII
-                pyenc = 'ascii'
-            strbytes = idaapi.get_ascii_contents2(self.ea, self.length, self.type, conv)
-            return unicode(strbytes, pyenc, 'replace') if as_unicode else strbytes
+            strbytes = ida_bytes.get_strlit_contents(self.ea, self.length, self.strtype)
+            return unicode(strbytes, "UTF-8", 'replace') if as_unicode else strbytes
 
         def __str__(self):
             return self._toseq(False)
@@ -512,25 +509,9 @@ class Strings(object):
         def __unicode__(self):
             return self._toseq(True)
 
-
-    STR_C       = 0x0001
-    """C-style ASCII string"""
-    STR_PASCAL  = 0x0002
-    """Pascal-style ASCII string (length byte)"""
-    STR_LEN2    = 0x0004
-    """Pascal-style, length is 2 bytes"""
-    STR_UNICODE = 0x0008
-    """Unicode string"""
-    STR_LEN4    = 0x0010
-    """Pascal-style, length is 4 bytes"""
-    STR_ULEN2   = 0x0020
-    """Pascal-style Unicode, length is 2 bytes"""
-    STR_ULEN4   = 0x0040
-    """Pascal-style Unicode, length is 4 bytes"""
-
     def clear_cache(self):
         """Clears the strings list cache"""
-        self.refresh(0, 0) # when ea1=ea2 the kernel will clear the cache
+        ida_strlist.clear_strlist()
 
     def __init__(self, default_setup = False):
         """
@@ -542,54 +523,38 @@ class Strings(object):
         if default_setup:
             self.setup()
         else:
-            self.refresh()
+            # restore saved options
+            ida_strlist.get_strlist_options()
+        self.refresh()
 
-        self._si  = idaapi.string_info_t()
+        self._si = ida_strlist.string_info_t()
 
-    def refresh(self, ea1=None, ea2=None):
+
+    def refresh(self):
         """Refreshes the strings list"""
-        if ea1 is None:
-            ea1 = idaapi.cvar.inf.minEA
-        if ea2 is None:
-            ea2 = idaapi.cvar.inf.maxEA
-
-        idaapi.refresh_strlist(ea1, ea2)
-        self.size = idaapi.get_strlist_qty()
+        ida_strlist.build_strlist()
+        self.size = ida_strlist.get_strlist_qty()
 
 
     def setup(self,
-              strtypes = STR_C,
+              strtypes = [ida_nalt.STRTYPE_C],
               minlen = 5,
               only_7bit = True,
               ignore_instructions = False,
-              ea1 = None,
-              ea2 = None,
               display_only_existing_strings = False):
 
-        if ea1 is None:
-            ea1 = idaapi.cvar.inf.minEA
-
-        if ea2 is None:
-            ea2 = idaapi.cvar.inf.maxEA
-
-        t = idaapi.strwinsetup_t()
+        t = ida_strlist.get_strlist_options()
         t.strtypes = strtypes
         t.minlen = minlen
         t.only_7bit = only_7bit
-        t.ea1 = ea1
-        t.ea2 = ea2
         t.display_only_existing_strings = display_only_existing_strings
-        idaapi.set_strlist_options(t)
-
-        # Automatically refreshes
         self.refresh()
 
 
     def _get_item(self, index):
-        if not idaapi.get_strlist_item(index, self._si):
+        if not ida_strlist.get_strlist_item(self._si, index):
             return None
-        else:
-            return Strings.StringItem(self._si)
+        return Strings.StringItem(self._si)
 
 
     def __iter__(self):
@@ -610,17 +575,17 @@ def GetIdbDir():
 
     This function returns directory path of the current IDB database
     """
-    return os.path.dirname(idaapi.cvar.database_idb) + os.sep
+    return os.path.dirname(ida_loader.get_path(ida_loader.PATH_TYPE_IDB)) + os.sep
 
 # -----------------------------------------------------------------------
 def GetRegisterList():
     """Returns the register list"""
-    return idaapi.ph_get_regnames()
+    return ida_idp.ph_get_regnames()
 
 # -----------------------------------------------------------------------
 def GetInstructionList():
     """Returns the instruction list of the current processor module"""
-    return [i[0] for i in idaapi.ph_get_instruc() if i[0]]
+    return [i[0] for i in ida_idp.ph_get_instruc() if i[0]]
 
 # -----------------------------------------------------------------------
 def _Assemble(ea, line):
@@ -633,11 +598,11 @@ def _Assemble(ea, line):
         lines = line
     ret = []
     for line in lines:
-        seg = idaapi.getseg(ea)
+        seg = ida_segment.getseg(ea)
         if not seg:
             return (False, "No segment at ea")
-        ip  = ea - (idaapi.ask_selector(seg.sel) << 4)
-        buf = idaapi.AssembleLine(ea, seg.sel, ip, seg.bitness, line)
+        ip  = ea - (ida_segment.sel2para(seg.sel) << 4)
+        buf = ida_idp.AssembleLine(ea, seg.sel, ip, seg.bitness, line)
         if not buf:
             return (False, "Assembler failed: " + line)
         ea += len(buf)
@@ -657,9 +622,9 @@ def Assemble(ea, line):
     @param ea:       start address
     @return: (False, "Error message") or (True, asm_buf) or (True, [asm_buf1, asm_buf2, asm_buf3])
     """
-    old_batch = idc.Batch(1)
+    old_batch = idc.batch(1)
     ret = _Assemble(ea, line)
-    idc.Batch(old_batch)
+    idc.batch(old_batch)
     return ret
 
 def _copy_obj(src, dest, skip_list = None):
@@ -694,21 +659,21 @@ class _reg_dtyp_t(object):
     This class describes a register's number and dtyp.
     The equal operator is overloaded so that two instances can be tested for equality
     """
-    def __init__(self, reg, dtyp):
-        self.reg  = reg
-        self.dtyp = dtyp
+    def __init__(self, reg, dtype):
+        self.reg = reg
+        self.dtype = dtype
 
     def __eq__(self, other):
-        return (self.reg == other.reg) and (self.dtyp == other.dtyp)
+        return (self.reg == other.reg) and (self.dtype == other.dtype)
 
 # -----------------------------------------------------------------------
 class _procregs(object):
     """Utility class allowing the users to identify registers in a decoded instruction"""
     def __getattr__(self, attr):
-        ri = idaapi.reg_info_t()
-        if not idaapi.parse_reg_name(attr, ri):
+        ri = ida_idp.reg_info_t()
+        if not ida_idp.parse_reg_name(ri, attr):
             raise AttributeError()
-        r = _reg_dtyp_t(ri.reg, ord(idaapi.get_dtyp_by_size(ri.size)))
+        r = _reg_dtyp_t(ri.reg, ida_ua.get_dtype_by_size(ri.size))
         self.__dict__[attr] = r
         return r
 
@@ -718,14 +683,14 @@ class _procregs(object):
 
 # -----------------------------------------------------------------------
 class _cpu(object):
-    "Simple wrapper around GetRegValue/SetRegValue"
+    "Simple wrapper around get_reg_value/set_reg_value"
     def __getattr__(self, name):
         #print "cpu.get(%s)" % name
-        return idc.GetRegValue(name)
+        return idc.get_reg_value(name)
 
     def __setattr__(self, name, value):
         #print "cpu.set(%s)" % name
-        return idc.SetRegValue(value, name)
+        return idc.set_reg_value(value, name)
 
 
 # --------------------------------------------------------------------------
@@ -754,7 +719,7 @@ class __process_ui_actions_helper(object):
             return False
 
         # Execute one action
-        idaapi.process_ui_action(
+        ida_kernwin.process_ui_action(
                 self.__action_list[self.__idx],
                 self.__flags)
 
@@ -775,7 +740,7 @@ def ProcessUiActions(actions, flags=0):
 
     # Instantiate a helper
     helper = __process_ui_actions_helper(actions, flags)
-    return False if len(helper) < 1 else idaapi.execute_ui_requests((helper,))
+    return False if len(helper) < 1 else ida_kernwin.execute_ui_requests((helper,))
 
 
 # -----------------------------------------------------------------------
@@ -786,15 +751,15 @@ class peutils_t(object):
     Constants from pe.h
     """
     PE_NODE = "$ PE header" # netnode name for PE header
-    PE_ALT_DBG_FPOS   = idaapi.BADADDR & -1 #  altval() -> translated fpos of debuginfo
-    PE_ALT_IMAGEBASE  = idaapi.BADADDR & -2 #  altval() -> loading address (usually pe.imagebase)
-    PE_ALT_PEHDR_OFF  = idaapi.BADADDR & -3 #  altval() -> offset of PE header
-    PE_ALT_NEFLAGS    = idaapi.BADADDR & -4 #  altval() -> neflags
-    PE_ALT_TDS_LOADED = idaapi.BADADDR & -5 #  altval() -> tds already loaded(1) or invalid(-1)
-    PE_ALT_PSXDLL     = idaapi.BADADDR & -6 #  altval() -> if POSIX(x86) imports from PSXDLL netnode
+    PE_ALT_DBG_FPOS   = ida_idaapi.BADADDR & -1 #  altval() -> translated fpos of debuginfo
+    PE_ALT_IMAGEBASE  = ida_idaapi.BADADDR & -2 #  altval() -> loading address (usually pe.imagebase)
+    PE_ALT_PEHDR_OFF  = ida_idaapi.BADADDR & -3 #  altval() -> offset of PE header
+    PE_ALT_NEFLAGS    = ida_idaapi.BADADDR & -4 #  altval() -> neflags
+    PE_ALT_TDS_LOADED = ida_idaapi.BADADDR & -5 #  altval() -> tds already loaded(1) or invalid(-1)
+    PE_ALT_PSXDLL     = ida_idaapi.BADADDR & -6 #  altval() -> if POSIX(x86) imports from PSXDLL netnode
 
     def __init__(self):
-        self.__penode = idaapi.netnode()
+        self.__penode = ida_netnode.netnode()
         self.__penode.create(peutils_t.PE_NODE)
 
     imagebase = property(

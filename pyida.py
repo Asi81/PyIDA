@@ -1,5 +1,5 @@
 import widgets.quick_menu
-from PySide import QtGui,QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 import string_refs
 import idaapi
 import idc
@@ -15,8 +15,21 @@ import wpsearch
 import widgets.BinaryDumpDialog
 import proj
 import gui
-from  PySide.QtGui import QFileDialog
+from  PyQt5.QtWidgets import QFileDialog
 from sources_export import export_project
+from widgets import visual_style
+
+
+class chooser_handler_t(idaapi.action_handler_t):
+    def __init__(self, pyfunc):
+        idaapi.action_handler_t.__init__(self)
+        self.func = pyfunc
+
+    def activate(self, ctx):
+        self.func()
+
+    def update(self, ctx):
+        return idaapi.AST_ENABLE_FOR_FORM# if idaapi.is_chooser_tform(ctx.form_type) else idaapi.AST_DISABLE_FOR_FORM
 
 
 def launch_quick_menu():
@@ -48,15 +61,19 @@ def add_hotkey(hotkey, func):
 
 
 def add_menu_item(menupath, name, hotkey, flags, pyfunc,args):
-    menuItem = idaapi.add_menu_item(menupath, name, hotkey, flags, pyfunc,args)
-    if menuItem is None:
-        print "Failed to register menu item  %s for launching %s!" % ( menupath + "->"+ name, pyfunc.__name__)
-    else:
-        print "Menu item %s registered for launching %s" % ( menupath + "->"+ name, pyfunc.__name__)
+
+    a = idaapi.register_action(idaapi.action_desc_t(name,name,  chooser_handler_t(pyfunc), hotkey))
+    if a:
+        print "action" + name + " registered"
+        if idaapi.attach_action_to_menu(menupath, name, idaapi.SETMENU_APP):
+            print name + "Attached to menu."
+        else:
+            print "Failed attaching" + name +" to menu."
 
 
 
-
+QtWidgets.QApplication.setStyle(u'Fusion')
+visual_style.set(QtWidgets.QApplication.instance())
 
 #init hotkeys
 add_hotkey("Alt-Shift-Q",launch_quick_menu)

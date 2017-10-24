@@ -1,5 +1,5 @@
 from idaapi import PluginForm
-from PySide import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import visual_style
 import idaapi
 import idc
@@ -130,12 +130,12 @@ class TableModel_t(QtCore.QAbstractTableModel):
             # --------------------------------------------------------------------------
 
 
-class TableView_t(QtGui.QTableView):
+class TableView_t(QtWidgets.QTableView):
 
     # public
     def __init__(self,  parent=None):
         super(TableView_t, self).__init__(parent=parent)
-        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         #
         self.setMouseTracking(True)
         self.setAutoFillBackground(True)
@@ -151,7 +151,7 @@ class TableView_t(QtGui.QTableView):
 
     def mousePressEvent(self, event):
         event.accept()
-        super(QtGui.QTableView, self).mousePressEvent(event)
+        super(QtWidgets.QTableView, self).mousePressEvent(event)
 
 
     def mouseDoubleClickEvent(self, event):
@@ -162,10 +162,10 @@ class TableView_t(QtGui.QTableView):
         line = m.raw_data(row,"lineno")
         col = m.raw_data(row,"col")
         jump_to_line(ea,line-1,col)
-        super(QtGui.QTableView, self).mouseDoubleClickEvent(event)
+        super(QtWidgets.QTableView, self).mouseDoubleClickEvent(event)
 
     def contextMenuEvent(self,event):
-        menu =  QtGui.QMenu()
+        menu =  QtWidgets.QMenu()
         menu.addAction("My Menu Item")
         menu.exec_(event.globalPos())
 
@@ -186,7 +186,7 @@ class TextSearchForm_t(PluginForm):
         Called when the plugin form is created
         """
         # Get parent widget
-        self.parent = self.FormToPySideWidget(form)
+        self.parent = self.FormToPyQtWidget(form)
         self.table_view = TableView_t()
         self.table_view.setModel(self.table_model)
         self.table_view.setSortingEnabled(True)
@@ -195,7 +195,7 @@ class TextSearchForm_t(PluginForm):
         self.adjustColumnsToContents()
         # #
 
-        self.func_view = QtGui.QTextEdit()
+        self.func_view = QtWidgets.QTextEdit()
         self.func_view.setReadOnly(True)
         #        self.line_edit.setCenterOnScroll(True)
         self.func_view.setPlainText("")
@@ -205,11 +205,11 @@ class TextSearchForm_t(PluginForm):
         self.func_view.setCurrentFont(font)
 
         # Populate PluginForm
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(0)
         #        layout.setContentsMargins(0, 0, 0, 0)
 
-        self.splitter = QtGui.QSplitter()
+        self.splitter = QtWidgets.QSplitter()
         self.splitter.setOrientation(QtCore.Qt.Vertical)
 
         self.splitter.addWidget(self.table_view)

@@ -1,7 +1,7 @@
-from PySide import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import visual_style
-from  widgets.BinaryDumpDialog.binary_dump_dialog_pyside import Ui_SaveBinaryDumpDialog
-from  PySide.QtGui import QFileDialog
+from  widgets.BinaryDumpDialog.binary_dump_dialog_pyqt5 import Ui_SaveBinaryDumpDialog
+from  PyQt5.QtWidgets import QFileDialog
 import proj
 import os
 import gui
@@ -48,7 +48,7 @@ class Dialog(Ui_SaveBinaryDumpDialog):
     def __init__(self):
 
         super(Ui_SaveBinaryDumpDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
 
         self.setupUi(self.d)
         self.ok_btn.clicked.connect(self.ok_btn_clicked)

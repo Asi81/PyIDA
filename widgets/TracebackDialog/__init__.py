@@ -1,6 +1,6 @@
-from PySide import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import visual_style
-from  widgets.TracebackDialog.traceback_dialog_pyside import Ui_TracebackDialog
+from  widgets.TracebackDialog.traceback_dialog_pyqt5 import Ui_TracebackDialog
 import traceback
 import urllib
 
@@ -17,7 +17,7 @@ class Dialog(Ui_TracebackDialog):
 
     def __init__(self):
         super(Ui_TracebackDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
         self.setupUi(self.d)
         visual_style.set(self.d)
         self.tb_list.itemDoubleClicked.connect(self.item_double_clicked)

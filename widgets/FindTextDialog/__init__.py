@@ -1,8 +1,8 @@
-from PySide import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 import idaapi
 import widgets.find_text_table
 from widgets import visual_style
-from  widgets.FindTextDialog.find_text_dialog_pyside import Ui_FindTextDialog
+from  widgets.FindTextDialog.find_text_dialog_pyqt5 import Ui_FindTextDialog
 import widgets.header_found_table
 
 
@@ -11,10 +11,11 @@ class Dialog(Ui_FindTextDialog):
     def __init__(self):
 
         super(Ui_FindTextDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
 
         self.setupUi(self.d)
-        self.selected_text = idaapi.get_highlighted_identifier()
+        h = idaapi.get_highlight(idaapi.get_current_viewer())
+        self.selected_text = h[0] if h else ""
         self.ok_btn.clicked.connect(self.ok_btn_clicked)
         self.cancel_btn.clicked.connect(self.cancel_btn_clicked)
         visual_style.set(self.d)
@@ -40,10 +41,11 @@ class HeadersDialog(Ui_FindTextDialog):
     def __init__(self):
 
         super(Ui_FindTextDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
 
         self.setupUi(self.d)
-        self.selected_text = idaapi.get_highlighted_identifier()
+        h = idaapi.get_highlight(idaapi.get_current_viewer())
+        self.selected_text = h[0] if h else ""
         self.ok_btn.clicked.connect(self.ok_btn_clicked)
         self.cancel_btn.clicked.connect(self.cancel_btn_clicked)
         self.only_named_functions.setVisible(False)

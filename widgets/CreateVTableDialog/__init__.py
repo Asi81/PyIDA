@@ -1,5 +1,5 @@
-from PySide import QtGui
-from widgets.CreateVTableDialog.create_vtable_dialog_pyside import Ui_CreateVTableDialog
+from PyQt5 import QtCore, QtGui, QtWidgets
+from widgets.CreateVTableDialog.create_vtable_dialog_pyqt5 import Ui_CreateVTableDialog
 from widgets import visual_style
 import decompiled
 import idc
@@ -13,12 +13,14 @@ class Dialog(Ui_CreateVTableDialog):
     def __init__(self):
 
         super(Ui_CreateVTableDialog,self).__init__()
-        txt = idaapi.get_highlighted_identifier()
+        h = idaapi.get_highlight(idaapi.get_current_viewer())
+        txt = h[0] if h else ""
+
         print txt
         start_ea = decompiled.get_ea(txt) if txt else idc.here()
         print start_ea
 
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
         self.setupUi(self.d)
         self.ok_btn.clicked.connect(self.ok_btn_clicked)
         self.cancel_btn.clicked.connect(self.cancel_btn_clicked)

@@ -1,4 +1,4 @@
-from PySide import QtGui
+from PyQt5 import QtGui
 
 
 text_color = QtGui.QColor('white')
@@ -11,9 +11,17 @@ QTextEdit {
 background-color: rgb(34, 44, 40);
 color: rgb(255, 255, 255);
 };
+QCheckBox {
+background-color: rgb(34, 44, 40);
+color: rgb(255, 255, 255);
+border-color: rgb(248, 248, 248);
+border-width: 2px;
+};
 color: rgb(248, 248, 248);
 gridline-color: rgb(0, 170, 255);
 background-color: rgb(54, 64, 60);
+border-color: rgb(248, 248, 248);
+border-width: 2px;
 """
 
 alarmed_style_sheet = """

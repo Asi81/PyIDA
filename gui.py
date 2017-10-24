@@ -1,22 +1,22 @@
 import os
 
 import proj
-from PySide import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 def ask(question,title = None, default_ans = False):
 
-    choice = QtGui.QMessageBox.question(None, title,
+    choice = QtWidgets.QMessageBox.question(None, title,
                                     question,
-                                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
-                                    QtGui.QMessageBox.Yes if default_ans else QtGui.QMessageBox.No)
+                                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                    QtWidgets.QMessageBox.Yes if default_ans else QtWidgets.QMessageBox.No)
 
-    return False if choice == QtGui.QMessageBox.StandardButton.No else True
+    return False if choice == QtWidgets.QMessageBox.StandardButton.No else True
 
 
 
 def critical(msg,title = 'Error'):
-    QtGui.QMessageBox.critical(None, unicode(title), unicode(msg), QtGui.QMessageBox.Ok)
+    QtWidgets.QMessageBox.critical(None, unicode(title), unicode(msg), QtWidgets.QMessageBox.Ok)
 
 
 def check_folder(fld_path):

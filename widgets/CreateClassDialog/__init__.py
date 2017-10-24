@@ -1,6 +1,6 @@
-from PySide import QtGui
+from PyQt5 import QtGui, QtWidgets
 import idaapi
-from widgets.CreateClassDialog.create_class_dialog_pyside import Ui_CreateClassDialog
+from widgets.CreateClassDialog.create_class_dialog_pyqt5 import Ui_CreateClassDialog
 import string
 import decompiled
 import os
@@ -23,7 +23,7 @@ class Dialog(Ui_CreateClassDialog):
     def __init__(self):
 
         super(Ui_CreateClassDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
         self.setupUi(self.d)
         self.ok_btn.clicked.connect(self.ok_btn_clicked)
         self.cancel_btn.clicked.connect(self.cancel_btn_clicked)
@@ -37,8 +37,9 @@ class Dialog(Ui_CreateClassDialog):
 
 
     def launch(self):
-
-        clname = class_name(idaapi.get_highlighted_identifier())
+        h = idaapi.get_highlight(idaapi.get_current_viewer())
+        selected_text = h[0] if h else ""
+        clname = class_name(selected_text)
         self.class_name_edit.setText(clname)
         self.d.exec_()
 
@@ -47,7 +48,7 @@ class Dialog(Ui_CreateClassDialog):
         sz = self.class_size_edit.text()
         fn =  self.class_filename_edit.text()
         if not name or not sz or not fn:
-            QtGui.QMessageBox.critical(None,u"Error",u'All parameters must be set', QtGui.QMessageBox.Ok)
+            QtWidgets.QMessageBox.critical(None,u"Error",u'All parameters must be set', QtWidgets.QMessageBox.Ok)
             return
 
         if not self.save_class():
@@ -80,18 +81,18 @@ class Dialog(Ui_CreateClassDialog):
     def save_class(self):
         fn = os.path.join(decompiled.headers_folder,self.class_filename_edit.text())
         if os.path.exists(fn):
-            choice = QtGui.QMessageBox.question(None,u"File exists",
+            choice = QtWidgets.QMessageBox.question(None,u"File exists",
                                                 u"File %s already exists. Do you want to overwrite it?" % self.class_filename_edit.text(),
-                                                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
-                                                QtGui.QMessageBox.No)
+                                                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                                QtWidgets.QMessageBox.No)
             if choice == 0:
                 return False
 
         if not os.path.exists(decompiled.headers_folder):
-            choice = QtGui.QMessageBox.question(None, u"Headers direcory doesnt exist",
+            choice = QtWidgets.QMessageBox.question(None, u"Headers direcory doesnt exist",
                                                 u"Headers directory %s doesnt exist. Do you want to create it?" % decompiled.headers_folder,
-                                                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
-                                                QtGui.QMessageBox.Yes)
+                                                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                                QtWidgets.QMessageBox.Yes)
             if choice == 0:
                 return False
             os.makedirs(decompiled.headers_folder)

@@ -1,5 +1,5 @@
-from PySide import QtGui,QtCore
-from widgets.CreateVarDialog.create_var_dialog_pyside import Ui_CreateVarDialog
+from PyQt5 import QtCore, QtGui, QtWidgets
+from widgets.CreateVarDialog.create_var_dialog_pyqt5 import Ui_CreateVarDialog
 from widgets import visual_style
 import re
 import idaapi
@@ -22,7 +22,7 @@ class Dialog(Ui_CreateVarDialog):
     def __init__(self):
 
         super(Ui_CreateVarDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
         self.setupUi(self.d)
         self.save_btn.clicked.connect(self.ok_btn_clicked)
         self.cancel_btn.clicked.connect(self.cancel_btn_clicked)
@@ -58,14 +58,15 @@ class Dialog(Ui_CreateVarDialog):
         self.old_struct = None
         self.new_struct = None
 
-        self.struct_completer = QtGui.QCompleter(self.structname_to_file_table.keys(),self.d)
+        self.struct_completer = QtWidgets.QCompleter(self.structname_to_file_table.keys(),self.d)
         self.struct_completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.class_cb.setCompleter(self.struct_completer)
 
         self.fill_structname_list()
 
     def launch(self):
-        text = idaapi.get_highlighted_identifier()
+        h = idaapi.get_highlight(idaapi.get_current_viewer())
+        text = h[0] if h else ""
         parse_result = parse_c_str(text)
 
 

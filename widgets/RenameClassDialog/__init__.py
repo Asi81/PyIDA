@@ -5,9 +5,9 @@ import gui
 import idautils
 import idc
 from FunctionName import FunctionName
-from PySide import QtGui,QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import visual_style
-from  widgets.RenameClassDialog.rename_class_dialog_pyside import Ui_RenameClassDialog
+from  widgets.RenameClassDialog.rename_class_dialog_pyqt5 import Ui_RenameClassDialog
 import idaapi
 import proj
 import hparser
@@ -20,7 +20,7 @@ class Dialog(Ui_RenameClassDialog):
     def __init__(self):
 
         super(Ui_RenameClassDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
         self.setupUi(self.d)
         self.old_name = ""
         self.new_name = ""
@@ -46,7 +46,7 @@ class Dialog(Ui_RenameClassDialog):
                 #     l = self.field_to_struct_table.get(field, [])
                 #     l.append(name)
                 #     self.field_to_struct_table[field] = l
-        self.struct_completer = QtGui.QCompleter(self.structname_to_file_table.keys(),self.d)
+        self.struct_completer = QtWidgets.QCompleter(self.structname_to_file_table.keys(),self.d)
         self.struct_completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.class_cb.setCompleter(self.struct_completer)
 
@@ -136,7 +136,7 @@ class Dialog(Ui_RenameClassDialog):
     def recreate_items(self):
         self.occurences_lit.clear()
         for i in range(len(self.text_items) + len(self.functions) + len(self.header_files)):
-            item  = QtGui.QListWidgetItem( "" ,self.occurences_lit)
+            item  = QtWidgets.QListWidgetItem( "" ,self.occurences_lit)
             item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
             item.setCheckState(QtCore.Qt.Unchecked)
 
@@ -248,4 +248,6 @@ class Dialog(Ui_RenameClassDialog):
 
 def launch():
     dialog = Dialog()
-    dialog.launch(idaapi.get_highlighted_identifier())
+    h = idaapi.get_highlight(idaapi.get_current_viewer())
+    selected_text = h[0] if h else ""
+    dialog.launch(selected_text)

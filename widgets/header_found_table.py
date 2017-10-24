@@ -1,5 +1,5 @@
 from idaapi import PluginForm
-from PySide import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import visual_style
 import idaapi
 import os
@@ -122,12 +122,12 @@ class TableModel_t(QtCore.QAbstractTableModel):
             # --------------------------------------------------------------------------
 
 
-class TableView_t(QtGui.QTableView):
+class TableView_t(QtWidgets.QTableView):
 
     # public
     def __init__(self,  parent=None):
         super(TableView_t, self).__init__(parent=parent)
-        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         #
         self.setMouseTracking(True)
         self.setAutoFillBackground(True)
@@ -152,7 +152,7 @@ class TableView_t(QtGui.QTableView):
 
 
     def contextMenuEvent(self,event):
-        menu =  QtGui.QMenu()
+        menu =  QtWidgets.QMenu()
         menu.addAction("My Menu Item")
         menu.exec_(event.globalPos())
 
@@ -173,7 +173,7 @@ class TextSearchForm_t(PluginForm):
         Called when the plugin form is created
         """
         # Get parent widget
-        self.parent = self.FormToPySideWidget(form)
+        self.parent = self.FormToPyQtWidget(form)
         self.table_view = TableView_t()
         self.table_view.setModel(self.table_model)
         self.table_view.setSortingEnabled(True)
@@ -181,7 +181,7 @@ class TextSearchForm_t(PluginForm):
         self.table_view.horizontalHeader().setStretchLastSection(False)
         self.adjustColumnsToContents()
 
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(0)
         self.layout.addWidget(self.table_view)
 

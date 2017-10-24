@@ -1,6 +1,6 @@
-from PySide import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import visual_style
-from  widgets.FindFuncDialog.find_func_dialog_pyside import Ui_FindFuncDialog
+from  widgets.FindFuncDialog.find_func_dialog_pyqt5 import Ui_FindFuncDialog
 import idc
 import idautils
 
@@ -12,7 +12,7 @@ class Dialog(Ui_FindFuncDialog):
     def __init__(self):
 
         super(Ui_FindFuncDialog,self).__init__()
-        self.d = QtGui.QDialog()
+        self.d = QtWidgets.QDialog()
         self.func_names = []
         self.jump_list = {}
         self.setupUi(self.d)
