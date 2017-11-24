@@ -67,9 +67,9 @@ class Dialog(Ui_SaveBinaryDumpDialog):
 
     def save_file_clicked(self):
         gui.check_folder(proj.dumps_folder)
-        fname, ok = QFileDialog.getSaveFileName(self.d , caption="Select file to save",
-                                                dir = proj.dumps_folder , filter="Binary file(*.bin)")
-        if ok:
+        fname, _ = QFileDialog.getSaveFileName(self.d , caption="Select file to save",
+                                                directory = proj.dumps_folder , filter="Binary file(*.bin)")
+        if fname:
             self.filename = fname
             self.filename_edit.setText(fname)
         self.check_vals()

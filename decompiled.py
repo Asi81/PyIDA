@@ -1,3 +1,4 @@
+import ida_nalt
 import idaapi
 import idautils
 import idc
@@ -300,7 +301,7 @@ def find_text_in_headers(filter_text, regex = False, standalone = False):
 
 def make_strings_const():
     s = idautils.Strings(False)
-    s.setup(strtypes=idautils.Strings.STR_UNICODE | idautils.Strings.STR_C)
+    s.setup(strtypes= [ida_nalt.STRTYPE_C, ida_nalt.STRTYPE_C_16, ida_nalt.STRTYPE_C_32])
 
     for v in s:
         gt = idc.GetType(v.ea)

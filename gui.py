@@ -11,7 +11,7 @@ def ask(question,title = None, default_ans = False):
                                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                                     QtWidgets.QMessageBox.Yes if default_ans else QtWidgets.QMessageBox.No)
 
-    return False if choice == QtWidgets.QMessageBox.StandardButton.No else True
+    return False if choice == QtWidgets.QMessageBox.No else True
 
 
 
