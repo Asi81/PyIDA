@@ -1,6 +1,10 @@
 import re
 
-
+import ida_nalt
+import idaapi
+import idautils
+import idc
+from FunctionName import FunctionName
 
 _operator_substitude = [
 
@@ -85,3 +89,27 @@ def getback_operator_symbols(func_name):
     m = op_name_regex(func_name)
     new_name = func_name[:m.start(1)-1]+ name2opr(m.group(1)) + func_name[m.end(1):]
     return new_name
+
+
+def rename_stl_functions():
+
+    stl_classes = ["vector","list","string","deque","map_set"]
+    stl_strings = ["%s too long" % clname for clname in "vector<T>","list<T>","string","deque<T>","map/set<T>" ]
+
+    s = idautils.Strings(False)
+    s.setup(strtypes=[ida_nalt.STRTYPE_C,] )
+    for v in s:
+        if str(v) in stl_strings:
+            cls = stl_classes[stl_strings.index(str(v))]
+            print cls
+            xrefs = [x.frm for x in idautils.XrefsTo(v.ea)]
+            ret = [idaapi.get_func(x) for x in xrefs if idaapi.get_func(x)]
+
+            for func in ret:
+                ea = func.startEA
+                func_name = FunctionName(idc.GetFunctionName(ea))
+                if func_name.namespace == cls:
+                    continue
+                func_name.set_namespace(cls)
+                print ea, func_name.fullname()
+                idc.MakeNameEx(ea, str(func_name.fullname()), idc.SN_NOCHECK)

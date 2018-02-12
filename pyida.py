@@ -18,7 +18,7 @@ import gui
 from  PyQt5.QtWidgets import QFileDialog
 from sources_export import export_project
 from widgets import visual_style
-
+import rename
 
 class chooser_handler_t(idaapi.action_handler_t):
     def __init__(self, pyfunc):
@@ -85,6 +85,7 @@ add_menu_item("Edit/PyIDA/", "Create Crc table here...",None,0, binary_finder.cr
 add_menu_item("Edit/PyIDA/", "Make all strings const",None,0, decompiled.make_strings_const ,None)
 add_menu_item("Edit/PyIDA/", "Replace Names",None,0, widgets.ReplaceDialog.launch ,None)
 add_menu_item("Edit/PyIDA/", "Save binary dump",None,0, widgets.BinaryDumpDialog.launch ,None)
+add_menu_item("Edit/PyIDA/", "Rename stl functions",None,0, rename.rename_stl_functions ,None)
 add_menu_item("File/Produce file/PyIDA/", "Create strings-to-function",None,0,export_func_names,None)
 add_menu_item("File/Load file/PyIDA/", "Import strings-to-function",None,0,import_func_names,None)
 add_menu_item("View/PyIDA/","Exception traceback",'Alt-Shift-M',0, widgets.TracebackDialog.launch,None)

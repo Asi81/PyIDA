@@ -148,7 +148,13 @@ class TableView_t(QtWidgets.QTableView):
 
         filename = m.raw_data(row,"filename")
         line = m.raw_data(row, "line")
-        subprocess.Popen(["C:\\Program Files (x86)\\Notepad++\\notepad++.exe", "-n%s" % (line+1),filename])
+        
+        f = ["C:\\Program Files\\Notepad++\\notepad++.exe",
+             "C:\\Program Files (x86)\\Notepad++\\notepad++.exe"]
+        for path in f:
+            if os.path.exists(path):
+                subprocess.Popen([path, "-n%s" % (line+1),filename])
+                break
 
 
     def contextMenuEvent(self,event):
