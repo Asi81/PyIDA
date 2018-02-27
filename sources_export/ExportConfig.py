@@ -1,6 +1,7 @@
 import json
 import os
 import gui
+import hparser
 import proj
 
 from  collections import OrderedDict
@@ -52,6 +53,13 @@ class ExportConfig:
 
     def append_class(self,cl_name):
         self.classnames.append(cl_name)
+
+    def remove_class(self,cl_name):
+        self.classnames.remove(cl_name)
+
+
+    def proj_file_exists(self):
+        return os.path.exists(self.cfg_file)
 
 
 #example

@@ -16,7 +16,7 @@ import widgets.BinaryDumpDialog
 import proj
 import gui
 from  PyQt5.QtWidgets import QFileDialog
-from sources_export import export_project
+from sources_export import export_project, create_export_config, edit_export_config, add_missing_classes
 from widgets import visual_style
 import rename
 
@@ -91,7 +91,10 @@ add_menu_item("File/Load file/PyIDA/", "Import strings-to-function",None,0,impor
 add_menu_item("View/PyIDA/","Exception traceback",'Alt-Shift-M',0, widgets.TracebackDialog.launch,None)
 add_menu_item("View/PyIDA/","Decompiled search",None,0, widgets.find_text_table.show,None)
 add_menu_item("View/PyIDA/","Text search",None,0, widgets.header_found_table.show,None)
-add_menu_item("File/PyIDA/", "Export to C++ sources",None,0,export_project,None)
+add_menu_item("File/PyIDA/Export Sources/", "Create export project",None,0,create_export_config,None)
+add_menu_item("File/PyIDA/Export Sources/", "Edit export project",None,0,edit_export_config,None)
+add_menu_item("File/PyIDA/Export Sources/", "Export to C++ sources",None,0,export_project,None)
+add_menu_item("File/PyIDA/Export Sources/", "Add missing classes",None,0,add_missing_classes,None)
 
 
 globals_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),"global_constants.h")

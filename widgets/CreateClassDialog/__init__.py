@@ -1,5 +1,8 @@
 from PyQt5 import QtGui, QtWidgets
+
+import gui
 import idaapi
+from sources_export import ExportConfig
 from widgets.CreateClassDialog.create_class_dialog_pyqt5 import Ui_CreateClassDialog
 import string
 import decompiled
@@ -79,17 +82,18 @@ class Dialog(Ui_CreateClassDialog):
         self.class_filename_edit.setText(fname)
 
     def save_class(self):
-        fn = os.path.join(decompiled.headers_folder,self.class_filename_edit.text())
+        classname = str(self.class_filename_edit.text())
+        fn = os.path.join(decompiled.headers_folder,classname)
         if os.path.exists(fn):
             choice = QtWidgets.QMessageBox.question(None,u"File exists",
-                                                u"File %s already exists. Do you want to overwrite it?" % self.class_filename_edit.text(),
+                                                u"File %s already exists. Do you want to overwrite it?" % classname,
                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                                                 QtWidgets.QMessageBox.No)
             if choice == 0:
                 return False
 
         if not os.path.exists(decompiled.headers_folder):
-            choice = QtWidgets.QMessageBox.question(None, u"Headers direcory doesnt exist",
+            choice = QtWidgets.QMessageBox.question(None, u"Headers directory doesnt exist",
                                                 u"Headers directory %s doesnt exist. Do you want to create it?" % decompiled.headers_folder,
                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                                                 QtWidgets.QMessageBox.Yes)
@@ -101,7 +105,14 @@ class Dialog(Ui_CreateClassDialog):
         f.write(self.class_definition())
         f.close()
         idc.ParseTypes(str(fn), idc.PT_FILE | idc.PT_PAKDEF)
-        print("File %s with class %s created and loaded into ida" %  (self.class_filename_edit.text(), self.class_name_edit.text()))
+        print("File %s with class %s created and loaded into ida" %  (classname, self.class_name_edit.text()))
+
+        export_cfg = ExportConfig()
+        if export_cfg.proj_file_exists() and gui.ask("Add %s to export configuration" % classname):
+            export_cfg.load()
+            export_cfg.append_class(classname)
+            export_cfg.save()
+
         return True
 
 

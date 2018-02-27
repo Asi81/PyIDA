@@ -311,6 +311,9 @@ class ClassExport:
     #     return re.sub("(\W)m_vptr->", "\g<1>", func_text)
 
 
+    def func_comments(self,ea):
+        return "//address: %s\n" % hex(ea)
+
     def render_func(self,ea):
 
         func_text = func_body(ea)
@@ -336,6 +339,7 @@ class ClassExport:
         for ea,fn in self.funcs:
             text = self.render_func(ea)
             self.cpp_body += "\n\n"
+            self.cpp_body += self.func_comments(ea)
             self.cpp_body += text
 
 
