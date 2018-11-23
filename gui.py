@@ -1,5 +1,7 @@
 import os
 
+import idaapi
+import idc
 import proj
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -27,4 +29,16 @@ def check_folder(fld_path):
         else:
             return False
     return True
+
+
+def make_offset_step_down():
+
+    ea = idaapi.get_screen_ea()
+    idaapi.process_ui_action("OpOffset", 0)
+    idaapi.jumpto(ea +  proj.pointer_size)
+
+def make_undef_step_down():
+    ea = idaapi.get_screen_ea()
+    idc.MakeUnkn(ea,1)
+    idaapi.jumpto(ea +  proj.pointer_size)
 

@@ -12,6 +12,10 @@ from ExportConfig import ExportConfig
 
 
 def export_project():
+
+    if not gui.check_folder(proj.exports_folder):
+        return
+
     cfg = ExportConfig()
     cfg.load()
 

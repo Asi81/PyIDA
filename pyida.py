@@ -77,6 +77,10 @@ visual_style.set(QtWidgets.QApplication.instance())
 
 #init hotkeys
 add_hotkey("Alt-Shift-Q",launch_quick_menu)
+add_hotkey("Ctrl-O", gui.make_offset_step_down)
+add_hotkey("Ctrl-U", gui.make_undef_step_down)
+
+
 
 add_menu_item("Search/PyIDA/","Find various constants",None,0, wpsearch.launch ,None)
 add_menu_item("Search/PyIDA/", "Find Crc tables",None,0, binary_finder.crc_table_find,None)
