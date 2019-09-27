@@ -1,3 +1,7 @@
+import sys
+
+print sys.path
+
 import widgets.quick_menu
 from PyQt5 import QtCore, QtGui, QtWidgets
 import string_refs
@@ -34,6 +38,9 @@ class chooser_handler_t(idaapi.action_handler_t):
 
 def launch_quick_menu():
     widgets.quick_menu.launch()
+
+def open_headers_folder():
+    os.system("explorer " + proj.headers_folder)
 
 
 def export_func_names():
@@ -79,6 +86,7 @@ visual_style.set(QtWidgets.QApplication.instance())
 add_hotkey("Alt-Shift-Q",launch_quick_menu)
 add_hotkey("Ctrl-O", gui.make_offset_step_down)
 add_hotkey("Ctrl-U", gui.make_undef_step_down)
+add_hotkey("Ctrl-Alt-F12", open_headers_folder )
 
 
 
